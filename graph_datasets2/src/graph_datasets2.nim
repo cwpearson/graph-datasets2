@@ -2,7 +2,6 @@
 # uses this file as the main entry point of the application.
 import argparse
 import os
-import nimprof
 
 import convert
 
