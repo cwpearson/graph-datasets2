@@ -1,6 +1,7 @@
 import edge
 import streams
 import strutils
+import strscans
 
 
 type Twitter * = ref object of RootObj
@@ -16,10 +17,15 @@ method readEdge *(this: Twitter, edge: var Edge):  bool {.base.} =
             stderr.write getCurrentExceptionMsg()
     let good = this.istrm.readLine(this.line)
     if good:
-        let fields: seq[string] = this.line.splitWhitespace()
-        let src = parseBiggestUint fields[0]
-        let dst = parseBiggestUint fields[1]
-        edge = newEdge(src, dst)
+        var
+            src: int
+            dst: int
+        if scanf(this.line, "$s$i$s$i$s", src, dst):
+            edge = newEdge(uint64(src), uint64(dst))
+        else:
+            echo "error"
+            quit(1)
+        
 
     good
 
