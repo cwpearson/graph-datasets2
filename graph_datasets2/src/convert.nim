@@ -124,8 +124,8 @@ proc convert *(src: string, dst:string): int {.discardable.} =
         bel.close()
     elif srcKind == "bel" and dstKind == "tsv":
         var
-            tsv = openTsv(src, fmWrite)
-            bel = openBel(dst, fmRead)
+            bel = openBel(src, fmRead)
+            tsv = openTsv(dst, fmWrite)
         
         var edge: Edge
         while bel.readEdge(edge):

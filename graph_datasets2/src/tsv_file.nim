@@ -29,8 +29,8 @@ method close *(this: Tsv): bool {. discardable, base .} =
 proc openTsv *(path: string, mode: FileMode): Tsv  =
     var f = Tsv(path: path)
     try:
+        echo "opening ", f.path
         f.strm = openFileStream(f.path, mode)
     except:
-        stderr.write getCurrentExceptionMsg()
         raise
     f
