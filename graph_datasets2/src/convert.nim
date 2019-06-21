@@ -4,6 +4,7 @@ import strutils
 import sequtils
 import algorithm
 import tables
+import os
 
 type Edge = tuple[src: uint64, dst: uint64]
 
@@ -16,11 +17,12 @@ proc convert *(src: string, dst:string): int {.discardable.} =
     var nextId = 0'u64
 
     echo "opening ", src
+    var lineCount = 0'i64
+
     var strm = newFileStream(src, fmRead)
     var line = ""
     if not isNil(strm):
         while strm.readLine(line):
-            echo "read ", line
             var fields: seq[string] = line.splitWhitespace()
             var user = parseBiggestUint fields[0]
             var follower = parseBiggestUint fields[1]
@@ -34,6 +36,9 @@ proc convert *(src: string, dst:string): int {.discardable.} =
             var dst = canonical[follower]
             edges.add((src, dst))
             edges.add((dst, src))
+            lineCount += 1
+            if lineCount %% 1000000'i64 == 0:
+                echo lineCount
     else:
         echo "error opening ", src
         quit(1)
