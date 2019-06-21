@@ -25,3 +25,5 @@ method readEdge *(this: Twitter, edge: var Edge):  bool {.base.} =
 
 method isGood *(this: Twitter): bool {.base.} = 
     isNil(this.istrm)
+
+   
