@@ -29,8 +29,12 @@ proc convert *(src: string, dst:string): int {.discardable.} =
         var follower = edge.dst
         if not canonical.hasKeyOrPut(user, nextId):
             nextId += 1
+            if canonical.len() %% 1000000 == 0:
+                echo "unique ids ", canonical.len()
         if not canonical.hasKeyOrPut(follower, nextId):
             nextId += 1
+            if canonical.len() %% 1000000 == 0:
+                echo "unique ids ", canonical.len()
         var src = canonical[user]
         var dst = canonical[follower]
         edges.add(newEdge(src, dst))
@@ -38,9 +42,6 @@ proc convert *(src: string, dst:string): int {.discardable.} =
         lineCount += 1
         if lineCount %% 1000000'i64 == 0:
             echo "line ", lineCount
-        if canonical.len() %% 1000000 == 0:
-            echo "unique ids ", canonical.len()
-
 
     # Sorting with custom proc
     echo "sorting..."
