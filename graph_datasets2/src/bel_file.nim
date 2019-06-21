@@ -11,15 +11,18 @@ type Bel * = ref object of RootObj
   line: string
 
 method readEdge *(this: Bel, edge: var Edge):  bool {.base.} = 
-    let good = this.strm.readLine(this.line)
-    if good:
+    var buffer: array[3, uint64]
+    let good = this.strm.readData(addr(buffer), sizeof(buffer))
+    if good == sizeof(buffer):
         let fields: seq[string] = this.line.splitWhitespace()
-        edge.src = parseBiggestUint fields[1]
-        edge.dst = parseBiggestUint fields[0]
-    good
+        edge.src = buffer[0]
+        edge.dst = buffer[1]
+        edge.weight = float(buffer[2])
+        return true
+    return false
 
 method writeEdge *(this: Bel, edge: Edge): bool {. discardable, base .} = 
-    var buffer = [uint64(edge.dst), uint64(edge.src), uint64(edge.weight)]
+    var buffer = [uint64(edge.src), uint64(edge.dst), uint64(edge.weight)]
     this.strm.writeData(addr(buffer),sizeof(buffer))
 
 method close *(this: Bel): bool {. discardable, base .} =

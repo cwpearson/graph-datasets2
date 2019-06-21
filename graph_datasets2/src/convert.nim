@@ -22,8 +22,18 @@ proc convert *(src: string, dst:string): int {.discardable.} =
     let splittedSrc = splitPath(src)
 # assert splittedPath.head == "/path/to/my"
     echo splittedSrc.tail
-    if splittedSrc.tail == "twitter_rv.net":
+    if srcKind == "" and splittedSrc.tail == "twitter_rv.net":
         srcKind = "twitter"
+
+    let splitted = splitFile(src)
+    if splitted.ext == ".bel":
+        srcKind = "bel"
+    elif splitted.ext == ".tsv":
+        srcKind = "tsv"
+
+    if srcKind == "":
+        echo "unable to determine format for source ", src
+        quit(1)
 
 
 
@@ -32,6 +42,10 @@ proc convert *(src: string, dst:string): int {.discardable.} =
         dstKind = "bel"
     elif splittedDst.ext == ".tsv":
         dstKind = "tsv"
+    else: 
+        echo "unable to determine format for dst ", src
+        quit(1)
+
 # assert splittedFile.dir == "/path/to/my"
 # assert splittedFile.name == "file"
 
@@ -95,7 +109,32 @@ proc convert *(src: string, dst:string): int {.discardable.} =
             for e in sortedEdges:
                 bel.writeEdge(e)
         else:
-            echo "ERROR"
+            echo "unexpected dstKind ", dstKind
             quit(1)
+
+    elif srcKind == "tsv" and dstKind == "bel":
+        var
+            tsv = openTsv(src, fmRead)
+            bel = openBel(dst, fmWrite)
+        
+        var edge: Edge
+        while tsv.readEdge(edge):
+            echo edge
+            bel.writeEdge(edge)
+        tsv.close()
+        bel.close()
+    elif srcKind == "bel" and dstKind == "tsv":
+        var
+            tsv = openTsv(src, fmWrite)
+            bel = openBel(dst, fmRead)
+        
+        var edge: Edge
+        while bel.readEdge(edge):
+            tsv.writeEdge(edge)
+        tsv.close()
+        bel.close()
+
+    else:
+        echo "don't know how to convert ", srcKind, " to ", dstKind
 
 
