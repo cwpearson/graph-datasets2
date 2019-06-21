@@ -14,9 +14,10 @@ import tsv_file
 proc convert *(src: string, dst:string): int {.discardable.} = 
     echo "converting ", src, " to ", dst
 
-    var edges: seq[Edge]
+    var edges= newSeqOfCap[Edge](1_500_000_000)
+    let initialSize = rightSize(150_000_000)
+    var canonical = initTable[uint64, uint64](initialSize)
 
-    var canonical = initTable[uint64, uint64]()
     var nextId = 0'u64
 
     echo "opening ", src
