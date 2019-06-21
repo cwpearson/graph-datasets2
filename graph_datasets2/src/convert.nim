@@ -38,8 +38,8 @@ proc convert *(src: string, dst:string): int {.discardable.} =
         lineCount += 1
         if lineCount %% 1000000'i64 == 0:
             echo "line ", lineCount
-        if canonical.len() %% 10000000 == 0:
-            echo "unique ids ", lineCount
+        if canonical.len() %% 1000000 == 0:
+            echo "unique ids ", canonical.len()
 
 
     # Sorting with custom proc
