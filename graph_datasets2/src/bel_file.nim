@@ -8,17 +8,19 @@ import os
 type Bel * = ref object of RootObj
   path *: string
   strm: FileStream
-  line: string
 
 method readEdge *(this: Bel, edge: var Edge):  bool {.base.} = 
     var buffer: array[3, uint64]
     let good = this.strm.readData(addr(buffer), sizeof(buffer))
     if good == sizeof(buffer):
-        let fields: seq[string] = this.line.splitWhitespace()
         edge.src = buffer[0]
         edge.dst = buffer[1]
         edge.weight = float(buffer[2])
         return true
+    else:
+        if not this.strm.atEnd():
+            echo "ERROR reading stream"
+            quit(1)
     return false
 
 method writeEdge *(this: Bel, edge: Edge): bool {. discardable, base .} = 

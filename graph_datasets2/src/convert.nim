@@ -119,7 +119,6 @@ proc convert *(src: string, dst:string): int {.discardable.} =
         
         var edge: Edge
         while tsv.readEdge(edge):
-            echo edge
             bel.writeEdge(edge)
         tsv.close()
         bel.close()
