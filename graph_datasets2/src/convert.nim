@@ -6,7 +6,8 @@ import algorithm
 import tables
 import os
 
-type Edge = tuple[src: uint64, dst: uint64]
+import edge
+import twitter_dataset
 
 proc convert *(src: string, dst:string): int {.discardable.} = 
     echo "converting ", src, " to ", dst
@@ -19,13 +20,13 @@ proc convert *(src: string, dst:string): int {.discardable.} =
     echo "opening ", src
     var lineCount = 0'i64
 
+    var twitter = Twitter(path: src)
     var strm = newFileStream(src, fmRead)
-    var line = ""
+    var edge: Edge
     if not isNil(strm):
-        while strm.readLine(line):
-            var fields: seq[string] = line.splitWhitespace()
-            var user = parseBiggestUint fields[0]
-            var follower = parseBiggestUint fields[1]
+        while twitter.readEdge(edge):
+            var user = edge.src
+            var follower = edge.dst
             if not canonical.hasKey(user):
                 canonical[user] = nextId
                 nextId += 1
@@ -34,8 +35,8 @@ proc convert *(src: string, dst:string): int {.discardable.} =
                 nextId += 1
             var src = canonical[user]
             var dst = canonical[follower]
-            edges.add((src, dst))
-            edges.add((dst, src))
+            edges.add(newEdge(src, dst))
+            edges.add(newEdge(dst, src))
             lineCount += 1
             if lineCount %% 1000000'i64 == 0:
                 echo lineCount
