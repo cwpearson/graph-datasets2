@@ -8,51 +8,30 @@ import os
 import sets
 
 import edge
+import logger
 import twitter_dataset
 import tsv_file
 import bel_file
+import format
 
 
 proc convert *(src: string, dst:string): int {.discardable.} = 
 
-    var 
-        srcKind = ""
-        dstKind = ""
+    let 
+        srcKind = guessFormat(src)
+        dstKind = guessFormat(dst)
 
-    let splittedSrc = splitPath(src)
-# assert splittedPath.head == "/path/to/my"
-    echo splittedSrc.tail
-    if srcKind == "" and splittedSrc.tail == "twitter_rv.net":
-        srcKind = "twitter"
-
-    let splitted = splitFile(src)
-    if splitted.ext == ".bel":
-        srcKind = "bel"
-    elif splitted.ext == ".tsv":
-        srcKind = "tsv"
-
-    if srcKind == "":
-        echo "unable to determine format for source ", src
+    if srcKind == dkUnknown:
+        error("unable to determine format for source ", src)
         quit(1)
 
-
-
-    let splittedDst = splitFile(dst)
-    if splittedDst.ext == ".bel":
-        dstKind = "bel"
-    elif splittedDst.ext == ".tsv":
-        dstKind = "tsv"
-    else: 
+    if dstKind == dkUnknown:
         echo "unable to determine format for dst ", src
         quit(1)
 
-# assert splittedFile.dir == "/path/to/my"
-# assert splittedFile.name == "file"
+    info("converting ", src, " ", srcKind, " to ", dst, " ", dstKind)
 
-
-    echo "converting ", src, " ", srcKind, " to ", dst, " ", dstKind
-
-    if srcKind == "twitter" and ( dstKind == "bel" or dstKind == "tsv"):
+    if srcKind == dkTwitter and ( dstKind == dkBel or dstKind == dkTsv):
 
         var initialSize = sets.rightSize(3_000_000_000)
         var edges = initHashSet[Edge](initialSize)
@@ -62,67 +41,55 @@ proc convert *(src: string, dst:string): int {.discardable.} =
 
         var nextId = 0'u64
 
-        var lineCount = 0'i64
-
-        echo "reading & uniqifying ", src
+        debug("reading & uniqifying ", src)
         var twitter = Twitter(path: src)
-        var edge: Edge
-        while twitter.readEdge(edge):
+        for edge in twitter.edges():
             # canonicalize the edge direction, since we will end up generating bidirectional edges
             # this prevents duplicate edges if there is a bidirectional edge in the input graph
-            var user = edge.src
-            var follower = edge.dst
+            let user = edge.src
+            let follower = edge.dst
             if not canonical.hasKeyOrPut(user, nextId):
                 nextId += 1
-                if canonical.len() %% 1000000 == 0:
-                    echo "unique ids ", canonical.len()
             if not canonical.hasKeyOrPut(follower, nextId):
                 nextId += 1
-                if canonical.len() %% 1000000 == 0:
-                    echo "unique ids ", canonical.len()
-            var src = canonical[user]
-            var dst = canonical[follower]
-            edges.incl(newEdge(src, dst))
-            edges.incl(newEdge(dst, src))
-            lineCount += 1
-            if lineCount %% 1000000'i64 == 0:
-                echo "line ", lineCount
+            let src = canonical[user]
+            let dst = canonical[follower]
+            edges.incl(initEdge(src, dst))
+            edges.incl(initEdge(dst, src))
 
         # Sorting with custom proc
-        echo "making sortable..."
+        debug("making sortable...")
         var sortedEdges = toSeq(edges)
+        debug("sorting...")
+        sort(sortedEdges, bel_file.cmp)
 
-        echo "sorting..."
-        sortedEdges.sort do (x, y: Edge) -> int:
-            result = cmp(x.dst, y.dst)
-            if result == 0:
-                result = cmp(x.src, y.src)
-
-        if dstKind == "tsv":
-            echo "writing ", dst
+        case dstKind
+        of dkTsv:
+            debug("writing ", dst)
             var tsv = openTsv(dst, fmWrite)
             for e in sortedEdges:
                 tsv.writeEdge(e)
-        elif dstKind == "bel":
-            echo "writing ", dst
+        of dkBel:
+            debug("writing ", dst)
             var bel = openBel(dst, fmWrite)
             for e in sortedEdges:
                 bel.writeEdge(e)
         else:
-            echo "unexpected dstKind ", dstKind
+            error("unexpected dstKind ", dstKind)
             quit(1)
 
-    elif srcKind == "tsv" and dstKind == "bel":
+    elif srcKind == dkTsv and dstKind == dkBel:
+        debug(src, " -> ", dst)
         var
             tsv = openTsv(src, fmRead)
             bel = openBel(dst, fmWrite)
+        defer: tsv.close()
+        defer: bel.close()
         
         var edge: Edge
         while tsv.readEdge(edge):
             bel.writeEdge(edge)
-        tsv.close()
-        bel.close()
-    elif srcKind == "bel" and dstKind == "tsv":
+    elif srcKind == dkBel and dstKind == dkTsv:
         var
             bel = openBel(src, fmRead)
             tsv = openTsv(dst, fmWrite)
@@ -134,6 +101,7 @@ proc convert *(src: string, dst:string): int {.discardable.} =
         bel.close()
 
     else:
-        echo "don't know how to convert ", srcKind, " to ", dstKind
+        error("don't know how to convert ", srcKind, " to ", dstKind)
+        quit(1)
 
 

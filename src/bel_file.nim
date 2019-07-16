@@ -1,9 +1,21 @@
-import edge
 import streams
 import strutils
 import os
+import sequtils
+import edge
 
 
+proc cmp *(x, y: Edge): int = 
+    if x.src < y.src:
+        return -1
+    elif x.src > y.src:
+        return 1
+    else:
+        if x.dst < y.dst:
+            return -1
+        elif x.dst > y.dst:
+            return 1
+    return 0
 
 type Bel * = ref object of RootObj
   path *: string
@@ -23,12 +35,24 @@ method readEdge *(this: Bel, edge: var Edge):  bool {.base.} =
             quit(1)
     return false
 
+iterator edges *(this: Bel): Edge =
+    var buffer: array[3, uint64]
+    this.strm.setPosition(0)
+    while not this.strm.atEnd():
+        this.strm.read(buffer)
+        var edge: Edge
+        edge.src = buffer[0]
+        edge.dst = buffer[1]
+        edge.weight = float(buffer[2])
+        yield edge       
+
 method writeEdge *(this: Bel, edge: Edge): bool {. discardable, base .} = 
     var buffer = [uint64(edge.src), uint64(edge.dst), uint64(edge.weight)]
     this.strm.writeData(addr(buffer),sizeof(buffer))
 
 method close *(this: Bel): bool {. discardable, base .} =
     this.strm.close()
+
 
 proc openBel *(path: string, mode: FileMode): Bel  =
     var bel = Bel(path: path)
@@ -38,3 +62,4 @@ proc openBel *(path: string, mode: FileMode): Bel  =
         stderr.write getCurrentExceptionMsg()
         raise
     bel
+

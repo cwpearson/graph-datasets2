@@ -1,11 +1,11 @@
 import hashes
 
-type Edge * = object
+type Edge * = object of RootObj
     src*: uint64
     dst*: uint64
     weight*: float64
 
-proc newEdge *(src: uint64, dst: uint64): Edge =
+proc initEdge *(src: uint64, dst: uint64): Edge =
     Edge(src: src, dst: dst, weight: 1.0'f64)
 
 proc hash *(x: Edge): Hash =
