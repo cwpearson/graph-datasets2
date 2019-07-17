@@ -42,7 +42,7 @@ proc orientBel(input_path: string, output_path: string,
             edge_est = sz div 24
             vert_est = edge_est div 20 #
         debug("est edges: ", edge_est, " est verts: ", vert_est)
-        var degrees = initTable[uint64, uint64](tables.rightSize(vert_est))
+        var degrees = initTable[int, int](tables.rightSize(vert_est))
         for edge in bel.edges():
             let d1 = degrees.getOrDefault(edge.src)
             degrees[edge.src] = d1 + 1

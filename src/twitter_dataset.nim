@@ -10,28 +10,28 @@ import asyncfile
 import logger
 import edge
 
-type Twitter * = ref object of RootObj
-  path *: string
-  strm: FileStream
-  line: string
+type Twitter* = ref object of RootObj
+    path*: string
+    strm: FileStream
+    line: string
 
 iterator edges *(this: Twitter): Edge =
     this.strm.setPosition(0)
     var line: string
-    
+
     while this.strm.readLine(line):
         var src, dst: int
         if scanf(line, "$s$i$s$i$s", src, dst):
-            yield initEdge(uint64(src), uint64(dst))
+            yield initEdge(src, dst)
         else:
             error("error parsing ", line)
             quit(1)
 
 
-method download *(this: Twitter, retries: int = 3 ): bool {. base .} =
+method download *(this: Twitter, retries: int = 3): bool {.base.} =
     ## Downloads twitter and saves it to ``Twitter.path``
     let url = "http://an.kaist.ac.kr/~haewoon/release/twitter_social_graph/twitter_rv.zip"
-    
+
     var client: AsyncHttpClient = newAsyncHttpClient()
 
     proc downloadEx(): Future[void] {.async.} =
@@ -56,7 +56,7 @@ method download *(this: Twitter, retries: int = 3 ): bool {. base .} =
                 defer: file.close()
 
             var response = await client.request(url = url, headers = headers)
-            
+
             await file.writeFromStream(response.bodyStream)
 
             echo "checking response code"

@@ -14,21 +14,23 @@ import ../format
 import ../logger
 
 type Stats = tuple
-    numEdges: uint64
-    numVerts: uint64
-    minDeg: uint64
-    maxDeg: uint64
+    numEdges: int
+    numVerts: int
+    minDeg: int
+    maxDeg: int
     avgDeg: float
     stddevDeg: float
+    deg0Verts: int
 
 proc initStats(): Stats =
     return Stats (
-        numEdges: 0'u64,
-        numVerts: 0'u64,
-        minDeg: 18_446_744_073_709_551_615'u64, # 2^64 - 1
-        maxDeg: 0'u64,
+        numEdges: 0,
+        numVerts: 0,
+        minDeg: int.high,
+        maxDeg: 0,
         avgDeg: 0.0,
         stddevDeg: Inf,
+        deg0Verts: 0,
     )
 
 proc count (path: string): int {.discardable.} =
@@ -36,7 +38,7 @@ proc count (path: string): int {.discardable.} =
 
     case datasetKind
     of dkBel:
-        debug("open ", path)
+        info("open ", path)
         let bel = openBel(path, fmRead)
         defer: bel.close()
         var stats = initStats()
@@ -45,9 +47,10 @@ proc count (path: string): int {.discardable.} =
             edge_est = sz div 24
             vert_est = edge_est div 5 #
         debug("estimate ", edge_est, " edges -> ", vert_est, " verts")
-        var deg = initTable[uint64, uint64](tables.rightSize(vert_est))
+        var deg = initTable[int, int](tables.rightSize(vert_est))
+        # var deg: Table[int, int]
 
-        debug("determine degrees ", path)
+        info("determine degrees ", path)
         for edge in bel.edges():
             stats.numEdges += 1
             let d1 = deg.getOrDefault(edge.src)
@@ -55,17 +58,19 @@ proc count (path: string): int {.discardable.} =
             let d2 = deg.getOrDefault(edge.dst)
             deg[edge.dst] = d2
 
-        stats.numVerts = uint64(len(deg))
+        stats.numVerts = len(deg)
 
-        debug("summarize degrees (1/2)")
-        var total = uint64(0)
+        info("summarize degrees (1/2)")
+        var total = 0
         for _, outdeg in deg:
             total += outdeg
             stats.minDeg = min(stats.minDeg, outdeg)
             stats.maxDeg = max(stats.maxDeg, outdeg)
+            if outdeg == 0:
+                stats.deg0Verts += 1
         stats.avgDeg = float(total) / float(len(deg))
 
-        debug("summarize degrees (2/2)")
+        info("summarize degrees (2/2)")
         var std_dev = 0.0
         for _, outdeg in deg:
             std_dev += pow(float(outdeg) - stats.avgDeg, 2)
@@ -76,7 +81,7 @@ proc count (path: string): int {.discardable.} =
 
         echo stats
     else:
-        echo "ERROR can't count for ", path, " of kind ", datasetKind
+        error("ERROR can't count for ", path, " of kind ", datasetKind)
         quit(1)
 
 proc doCount *[T](opts: T): int {.discardable.} =

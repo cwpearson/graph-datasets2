@@ -33,7 +33,7 @@ proc relabelBel(input_path, output_path: string): int {.discardable.} =
             edge_est = sz div 24
             vert_est = edge_est div 10 #
         debug("est edges: ", edge_est, " est verts: ", vert_est)
-        var hist = initTable[uint64, uint64](tables.rightSize(vert_est))
+        var hist = initTable[int, int](tables.rightSize(vert_est))
         for edge in bel.edges():
             let d1 = hist.getOrDefault(edge.src)
             hist[edge.src] = d1 + 1
@@ -42,7 +42,7 @@ proc relabelBel(input_path, output_path: string): int {.discardable.} =
 
 
         info("sort verts by degree (descending)")
-        proc mycmp(x, y: tuple[v: uint64, d: uint64]): int =
+        proc mycmp(x, y: tuple[v: int, d: int]): int =
             if x.d == y.d:
                 if x.v == y.v:
                     return 0
@@ -56,9 +56,9 @@ proc relabelBel(input_path, output_path: string): int {.discardable.} =
         sort(srcp, mycmp)
 
         echo "compute new vert labels by sorted position"
-        var dstp = initTable[uint64, uint64](tables.rightSize(len(srcp)))
+        var dstp = initTable[int, int](tables.rightSize(len(srcp)))
         for i, (v, d) in srcp:
-            dstp[v] = uint64(i)
+            dstp[v] = int(i)
         # echo dstp
 
         # relabel edges
