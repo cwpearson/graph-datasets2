@@ -9,7 +9,7 @@ import cmds/count
 import cmds/orient
 import cmds/relabel
 
-var p = newParser("Some Program"):
+var p = newParser("grpah_datasets"):
   flag("--debug")
   flag("--verbose")
   run:
@@ -30,7 +30,7 @@ var p = newParser("Some Program"):
   command("orient"):
     arg("input")
     arg("output")
-    option("-k", "--kind", default="upper", choices = @["lower", "upper", "degree"])
+    option("-k", "--kind", default = "upper", choices = @["lower", "upper", "degree"])
     run:
       doOrient(opts)
   command("relabel"):
@@ -41,5 +41,11 @@ var p = newParser("Some Program"):
 
 
 when isMainModule:
-  p.run()
+  try:
+    p.run()
+  except UsageError:
+    let msg = getCurrentExceptionMsg()
+    echo msg
+    echo p.help
+    quit(2)
 

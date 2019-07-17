@@ -31,14 +31,16 @@ proc relabelBel(input_path, output_path: string): int {.discardable.} =
         let
             sz = getFileSize(input_path)
             edge_est = sz div 24
-            vert_est = edge_est div 10 #
+            vert_est = edge_est div 1 #
         debug("est edges: ", edge_est, " est verts: ", vert_est)
         var hist = initTable[int, int](tables.rightSize(vert_est))
-        for edge in bel.edges():
+        for i, edge in bel:
             let d1 = hist.getOrDefault(edge.src)
             hist[edge.src] = d1 + 1
             let d2 = hist.getOrDefault(edge.dst)
             hist[edge.dst] = d2 + 1
+            if i mod (1 shl 18) == 0 and i != 0:
+                debug("read ", i, " edges...")
 
 
         info("sort verts by degree (descending)")

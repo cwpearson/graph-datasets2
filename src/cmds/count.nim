@@ -45,18 +45,20 @@ proc count (path: string): int {.discardable.} =
         let
             sz = getFileSize(path)
             edge_est = sz div 24
-            vert_est = edge_est div 5 #
+            vert_est = edge_est div 1 #
         debug("estimate ", edge_est, " edges -> ", vert_est, " verts")
         var deg = initTable[int, int](tables.rightSize(vert_est))
         # var deg: Table[int, int]
 
         info("determine degrees ", path)
-        for edge in bel.edges():
+        for i, edge in bel:
             stats.numEdges += 1
             let d1 = deg.getOrDefault(edge.src)
             deg[edge.src] = d1+1
             let d2 = deg.getOrDefault(edge.dst)
             deg[edge.dst] = d2
+            if i mod (1 shl 18) == 0:
+                debug("edge ", i, "...")
 
         stats.numVerts = len(deg)
 
