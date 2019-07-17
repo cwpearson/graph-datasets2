@@ -5,20 +5,19 @@ import sequtils
 import algorithm
 import tables
 import os
-import sets
-import algorithm
 
-import edge
-import bel_file
-import format
+import ../edge
+import ../bel_file
+import ../format
+import ../logger
 
-type Method * = enum
+type Method* = enum
     mCompact
     mRandom
 
 proc relabelBel(input_path, output_path: string): int {.discardable.} =
 
-    echo "open ", input_path
+    info("open ", input_path)
     let bel = openBel(input_path, fmRead)
     defer: bel.close()
     let orientation = mCompact
@@ -28,15 +27,22 @@ proc relabelBel(input_path, output_path: string): int {.discardable.} =
     case orientation
     of mCompact:
         # compute degree of each node
-        echo "count vert degrees"
-        var degrees: Table[uint64, uint64]
+        info("count vert degrees")
+        let
+            sz = getFileSize(input_path)
+            edge_est = sz div 24
+            vert_est = edge_est div 10 #
+        debug("est edges: ", edge_est, " est verts: ", vert_est)
+        var hist = initTable[uint64, uint64](tables.rightSize(vert_est))
         for edge in bel.edges():
-            let d1 = degrees.getOrDefault(edge.src)
-            degrees[edge.src] = d1 + 1
-            let d2 = degrees.getOrDefault(edge.dst)
-            degrees[edge.src] = d2 + 1
+            let d1 = hist.getOrDefault(edge.src)
+            hist[edge.src] = d1 + 1
+            let d2 = hist.getOrDefault(edge.dst)
+            hist[edge.dst] = d2 + 1
 
-        proc mycmp(x,y: tuple[v: uint64, d: uint64]): int = 
+
+        info("sort verts by degree (descending)")
+        proc mycmp(x, y: tuple[v: uint64, d: uint64]): int =
             if x.d == y.d:
                 if x.v == y.v:
                     return 0
@@ -46,29 +52,27 @@ proc relabelBel(input_path, output_path: string): int {.discardable.} =
             if x.d > y.d:
                 return -1
             return 1
-
-        echo "sort verts by degree (descending)"
-        var sortedVerts = toSeq(pairs(degrees))
-        sort(sortedVerts, mycmp)
+        var srcp = toSeq(pairs(hist))
+        sort(srcp, mycmp)
 
         echo "compute new vert labels by sorted position"
-        var newVerts: Table[uint64, uint64]
-        for i, (v, d) in sortedVerts:
-            newVerts[v] = uint64(i)
-        # echo newVerts
+        var dstp = initTable[uint64, uint64](tables.rightSize(len(srcp)))
+        for i, (v, d) in srcp:
+            dstp[v] = uint64(i)
+        # echo dstp
 
         # relabel edges
         echo "rewrite edges with new labels"
         for edge in bel.edges():
-            let new_src = newVerts[edge.src]
-            let new_dst = newVerts[edge.dst]
+            let new_src = dstp[edge.src]
+            let new_dst = dstp[edge.dst]
             edges.add(initEdge(new_src, new_dst))
-                
+
     of mRandom:
-        echo "ERROR unimplemented"
+        error("random relabel unimplemented")
         quit(1)
 
-    echo "write ", len(edges), " edges to ", output_path
+    info("write ", len(edges), " edges to ", output_path)
 
     # sort edges by src
     sort(edges, bel_file.cmp)
@@ -76,10 +80,9 @@ proc relabelBel(input_path, output_path: string): int {.discardable.} =
     defer: out_bel.close()
     for edge in edges:
         out_bel.writeEdge(edge)
-    echo "done"
 
-    
-proc orient *(input_path, output_path: string): int {.discardable.} = 
+
+proc relabel *(input_path, output_path: string): int {.discardable.} =
     let datasetKind = guessFormat(input_path)
 
     case datasetKind
@@ -89,3 +92,5 @@ proc orient *(input_path, output_path: string): int {.discardable.} =
         echo "ERROR can't relabel ", input_path, " of kind ", datasetKind
         quit(1)
 
+proc doRelabel *[T](opts: T): int {.discardable.} =
+    relabel(opts.input, opts.output)

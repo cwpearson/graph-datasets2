@@ -1,6 +1,6 @@
 import logging
 
-var consoleLog = newConsoleLogger()
+var consoleLog = newConsoleLogger(useStdErr = true)
 
 addHandler(consoleLog)
 

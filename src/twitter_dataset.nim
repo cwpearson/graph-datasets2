@@ -50,14 +50,14 @@ method download *(this: Twitter, retries: int = 3 ): bool {. base .} =
                     "Range": &"bytes={sz}-"
                 })
                 file = openAsync(this.path, fmAppend)
+                defer: file.close()
             else:
                 file = openAsync(this.path, fmWrite)
+                defer: file.close()
 
             var response = await client.request(url = url, headers = headers)
             
             await file.writeFromStream(response.bodyStream)
-
-            file.close()
 
             echo "checking response code"
             if response.code.is4xx or response.code.is5xx:
@@ -65,13 +65,13 @@ method download *(this: Twitter, retries: int = 3 ): bool {. base .} =
                 if retriesLeft <= 0:
                     raise newException(HttpRequestError, response.status)
 
-    var result = newFuture[void]("Twitter::download")
+    var res = newFuture[void]("Twitter::download")
     try:
-        result = downloadEx()
+        res = downloadEx()
     except Exception as exc:
-        result.fail(exc)
+        res.fail(exc)
         raise
-    waitFor result
+    waitFor res
 
     return true
 

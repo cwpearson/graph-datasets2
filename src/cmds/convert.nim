@@ -7,17 +7,18 @@ import tables
 import os
 import sets
 
-import edge
-import logger
-import twitter_dataset
-import tsv_file
-import bel_file
-import format
+import ../edge
+import ../logger
+import ../twitter_dataset
+import ../tsv_file
+import ../bel_file
+import ../format
 
 
-proc convert *(src: string, dst:string): int {.discardable.} = 
 
-    let 
+proc convert (src: string, dst: string): int {.discardable.} =
+
+    let
         srcKind = guessFormat(src)
         dstKind = guessFormat(dst)
 
@@ -31,7 +32,7 @@ proc convert *(src: string, dst:string): int {.discardable.} =
 
     info("converting ", src, " ", srcKind, " to ", dst, " ", dstKind)
 
-    if srcKind == dkTwitter and ( dstKind == dkBel or dstKind == dkTsv):
+    if srcKind == dkTwitter and (dstKind == dkBel or dstKind == dkTsv):
 
         var initialSize = sets.rightSize(3_000_000_000)
         var edges = initHashSet[Edge](initialSize)
@@ -85,7 +86,7 @@ proc convert *(src: string, dst:string): int {.discardable.} =
             bel = openBel(dst, fmWrite)
         defer: tsv.close()
         defer: bel.close()
-        
+
         var edge: Edge
         while tsv.readEdge(edge):
             bel.writeEdge(edge)
@@ -93,7 +94,7 @@ proc convert *(src: string, dst:string): int {.discardable.} =
         var
             bel = openBel(src, fmRead)
             tsv = openTsv(dst, fmWrite)
-        
+
         var edge: Edge
         while bel.readEdge(edge):
             tsv.writeEdge(edge)
@@ -104,4 +105,5 @@ proc convert *(src: string, dst:string): int {.discardable.} =
         error("don't know how to convert ", srcKind, " to ", dstKind)
         quit(1)
 
-
+proc doConvert *[T](opts: T): int {.discardable.} =
+    convert(opts.input, opts.output)

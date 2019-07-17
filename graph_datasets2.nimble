@@ -5,7 +5,7 @@ author        = "Carl Pearson"
 description   = "A dataset manager"
 license       = "MIT"
 srcDir        = "src"
-bin           = @["graph_datasets2"]
+bin           = @["graph_datasets"]
 
 
 
