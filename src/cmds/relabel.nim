@@ -31,7 +31,7 @@ proc relabelBel(input_path, output_path: string): int {.discardable.} =
         let
             sz = getFileSize(input_path)
             edge_est = sz div 24
-            vert_est = edge_est div 1 #
+            vert_est = edge_est div 2 #
         debug("est edges: ", edge_est, " est verts: ", vert_est)
         var hist = initTable[int, int](tables.rightSize(vert_est))
         for i, edge in bel:
@@ -70,14 +70,18 @@ proc relabelBel(input_path, output_path: string): int {.discardable.} =
             let new_dst = dstp[edge.dst]
             edges.add(initEdge(new_src, new_dst))
 
+
     of mRandom:
         error("random relabel unimplemented")
         quit(1)
 
-    info("write ", len(edges), " edges to ", output_path)
+
 
     # sort edges by src
+    info("sort edges")
     sort(edges, bel_file.cmp)
+
+    info("write ", len(edges), " edges to ", output_path)
     let out_bel = openBel(output_path, fmWrite)
     defer: out_bel.close()
     for edge in edges:
