@@ -47,8 +47,14 @@ iterator edges *(this: Bel): Edge =
         edge.weight = float(buffer[2])
         yield edge
 
+iterator pairs *(this: Bel): (int, Edge) =
+    var cnt = 0
+    for edge in this.edges():
+        yield (cnt, edge)
+        cnt += 1
+
 method writeEdge *(this: Bel, edge: Edge): bool {.discardable, base.} =
-    var buffer = [uint64(edge.src), uint64(edge.dst), uint64(edge.weight)]
+    var buffer = [uint64(edge.dst), uint64(edge.src), uint64(edge.weight)]
     this.strm.writeData(addr(buffer), sizeof(buffer))
 
 method close *(this: Bel): bool {.discardable, base.} =
