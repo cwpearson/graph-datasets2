@@ -94,12 +94,11 @@ proc convert (src: string, dst: string): int {.discardable.} =
         var
             bel = openBel(src, fmRead)
             tsv = openTsv(dst, fmWrite)
+        defer: tsv.close()
+        defer: bel.close()
 
-        var edge: Edge
-        while bel.readEdge(edge):
+        for edge in bel.edges():
             tsv.writeEdge(edge)
-        tsv.close()
-        bel.close()
 
     else:
         error("don't know how to convert ", srcKind, " to ", dstKind)
