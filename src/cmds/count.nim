@@ -57,7 +57,7 @@ proc count (path: string): int {.discardable.} =
             deg[edge.src] = d1+1
             let d2 = deg.getOrDefault(edge.dst)
             deg[edge.dst] = d2
-            if i mod (1 shl 18) == 0:
+            if i mod (1024 * 1024) == 0:
                 debug("edge ", i, "...")
 
         stats.numVerts = len(deg)

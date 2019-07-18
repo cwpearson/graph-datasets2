@@ -2,7 +2,6 @@ import system
 import strutils
 import sequtils
 import algorithm
-import tables
 import os
 import algorithm
 
@@ -10,6 +9,7 @@ import ../edge
 import ../bel_file
 import ../format
 import ../logger
+import ../dict
 
 type Orientation* = enum
     oLowerTriangular
@@ -42,12 +42,7 @@ proc orientBel(input_path: string, output_path: string,
     of oDegree:
         # compute degree of each node
         info("determine vert degrees")
-        let
-            sz = getFileSize(input_path)
-            edge_est = sz div 24
-            vert_est = edge_est div 1
-        debug("est edges: ", edge_est, " est verts: ", vert_est)
-        var degrees = initTable[int, int](tables.rightSize(vert_est))
+        var degrees = initDict[int, int]()
         for edge in bel.edges():
             let d1 = degrees.getOrDefault(edge.src)
             degrees[edge.src] = d1 + 1

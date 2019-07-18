@@ -24,6 +24,11 @@ iterator pairs *[A, B](t: Dict[A, B]): (A, B) =
             let (k, v) = kvp
             yield (k, v)
 
+iterator keys *[A, B](t: Dict[A, B]): A =
+    for kvps in t.data:
+        for (k, v) in kvps:
+            yield k
+
 proc len *[A, B](t: Dict[A, B]): int {.inline.} =
     result = t.size
 
@@ -67,7 +72,7 @@ proc hasKey*[A, B](t: var Dict[A, B], key: A): bool =
             return true
     return false
 
-proc `[]`*[A, B](t: var Dict[A, B], key: A): B =
+proc `[]`*[A, B](t: Dict[A, B], key: A): B =
     let dataIdx = hash(key) and (t.capacity - 1)
     # find key if present
     for i, kv in t.data[dataIdx]:

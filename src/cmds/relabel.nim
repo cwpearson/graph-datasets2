@@ -3,13 +3,13 @@ import system
 import strutils
 import sequtils
 import algorithm
-import tables
 import os
 
 import ../edge
 import ../bel_file
 import ../format
 import ../logger
+import ../dict
 
 type Method* = enum
     mCompact
@@ -28,18 +28,13 @@ proc relabelBel(input_path, output_path: string): int {.discardable.} =
     of mCompact:
         # compute degree of each node
         info("count vert degrees")
-        let
-            sz = getFileSize(input_path)
-            edge_est = sz div 24
-            vert_est = edge_est div 2 #
-        debug("est edges: ", edge_est, " est verts: ", vert_est)
-        var hist = initTable[int, int](tables.rightSize(vert_est))
+        var hist = initDict[int, int]()
         for i, edge in bel:
             let d1 = hist.getOrDefault(edge.src)
             hist[edge.src] = d1 + 1
             let d2 = hist.getOrDefault(edge.dst)
             hist[edge.dst] = d2 + 1
-            if i mod (1 shl 18) == 0 and i != 0:
+            if i mod (1024 * 1024) == 0 and i != 0:
                 debug("read ", i, " edges...")
 
 
@@ -53,12 +48,14 @@ proc relabelBel(input_path, output_path: string): int {.discardable.} =
                 return 1
             if x.d > y.d:
                 return -1
-            return 1
+            elif x.d < y.d:
+                return 1
+            return
         var srcp = toSeq(pairs(hist))
         sort(srcp, mycmp)
 
         echo "compute new vert labels by sorted position"
-        var dstp = initTable[int, int](tables.rightSize(len(srcp)))
+        var dstp = initDict[int, int]()
         for i, (v, d) in srcp:
             dstp[v] = int(i)
         # echo dstp

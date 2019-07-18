@@ -4,8 +4,10 @@ import argparse
 import os
 import logger
 
+import cmds/cacherows
 import cmds/convert
 import cmds/count
+import cmds/download
 import cmds/orient
 import cmds/relabel
 
@@ -18,6 +20,10 @@ var p = newParser("grpah_datasets"):
       setLevel(lvlDebug)
     if opts.verbose:
       setLevel(lvlAll)
+  command("cacherows"):
+    arg("input")
+    run:
+      doCacherows(opts)
   command("convert"):
     arg("input")
     arg("output")
@@ -27,6 +33,10 @@ var p = newParser("grpah_datasets"):
     arg("input")
     run:
       doCount(opts)
+  command("download"):
+    arg("name")
+    run:
+      doDownload(opts)
   command("orient"):
     arg("input")
     arg("output")
