@@ -1,0 +1,23 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "taskName": "build module",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "type": "shell",
+            "command": "nim",
+            "args": [
+                "c",
+                "src/graph_datasets.nim"
+            ],
+            "options": {
+                "cwd": "${workspaceRoot}"
+            }
+        }
+    ]
+}

@@ -38,9 +38,9 @@ proc convert (src: string, dst: string): int {.discardable.} =
         var edges = initHashSet[Edge](initialSize)
 
         initialSize = tables.rightSize(42_000_000)
-        var canonical = initTable[uint64, uint64](initialSize)
+        var canonical = initTable[int, int](initialSize)
 
-        var nextId = 0'u64
+        var nextId = 0
 
         debug("reading & uniqifying ", src)
         var twitter = Twitter(path: src)

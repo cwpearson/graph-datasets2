@@ -26,8 +26,8 @@ method readEdge *(this: Bel, edge: var Edge): bool {.base.} =
     var buffer: array[3, uint64]
     let good = this.strm.readData(addr(buffer), sizeof(buffer))
     if good == sizeof(buffer):
-        edge.src = buffer[1]
-        edge.dst = buffer[0]
+        edge.src = int(buffer[1])
+        edge.dst = int(buffer[0])
         edge.weight = float(buffer[2])
         return true
     else:
@@ -42,13 +42,19 @@ iterator edges *(this: Bel): Edge =
     while not this.strm.atEnd():
         this.strm.read(buffer)
         var edge: Edge
-        edge.src = buffer[1]
-        edge.dst = buffer[0]
+        edge.src = int(buffer[1])
+        edge.dst = int(buffer[0])
         edge.weight = float(buffer[2])
         yield edge
 
+iterator pairs *(this: Bel): (int, Edge) =
+    var cnt = 0
+    for edge in this.edges():
+        yield (cnt, edge)
+        cnt += 1
+
 method writeEdge *(this: Bel, edge: Edge): bool {.discardable, base.} =
-    var buffer = [uint64(edge.src), uint64(edge.dst), uint64(edge.weight)]
+    var buffer = [uint64(edge.dst), uint64(edge.src), uint64(edge.weight)]
     this.strm.writeData(addr(buffer), sizeof(buffer))
 
 method close *(this: Bel): bool {.discardable, base.} =

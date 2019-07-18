@@ -31,18 +31,20 @@ proc relabelBel(input_path, output_path: string): int {.discardable.} =
         let
             sz = getFileSize(input_path)
             edge_est = sz div 24
-            vert_est = edge_est div 10 #
+            vert_est = edge_est div 2 #
         debug("est edges: ", edge_est, " est verts: ", vert_est)
-        var hist = initTable[uint64, uint64](tables.rightSize(vert_est))
-        for edge in bel.edges():
+        var hist = initTable[int, int](tables.rightSize(vert_est))
+        for i, edge in bel:
             let d1 = hist.getOrDefault(edge.src)
             hist[edge.src] = d1 + 1
             let d2 = hist.getOrDefault(edge.dst)
             hist[edge.dst] = d2 + 1
+            if i mod (1 shl 18) == 0 and i != 0:
+                debug("read ", i, " edges...")
 
 
         info("sort verts by degree (descending)")
-        proc mycmp(x, y: tuple[v: uint64, d: uint64]): int =
+        proc mycmp(x, y: tuple[v: int, d: int]): int =
             if x.d == y.d:
                 if x.v == y.v:
                     return 0
@@ -56,9 +58,9 @@ proc relabelBel(input_path, output_path: string): int {.discardable.} =
         sort(srcp, mycmp)
 
         echo "compute new vert labels by sorted position"
-        var dstp = initTable[uint64, uint64](tables.rightSize(len(srcp)))
+        var dstp = initTable[int, int](tables.rightSize(len(srcp)))
         for i, (v, d) in srcp:
-            dstp[v] = uint64(i)
+            dstp[v] = int(i)
         # echo dstp
 
         # relabel edges
@@ -68,14 +70,18 @@ proc relabelBel(input_path, output_path: string): int {.discardable.} =
             let new_dst = dstp[edge.dst]
             edges.add(initEdge(new_src, new_dst))
 
+
     of mRandom:
         error("random relabel unimplemented")
         quit(1)
 
-    info("write ", len(edges), " edges to ", output_path)
+
 
     # sort edges by src
+    info("sort edges")
     sort(edges, bel_file.cmp)
+
+    info("write ", len(edges), " edges to ", output_path)
     let out_bel = openBel(output_path, fmWrite)
     defer: out_bel.close()
     for edge in edges:

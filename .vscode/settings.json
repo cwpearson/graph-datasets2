@@ -1,0 +1,5 @@
+{
+    "nim.buildOnSave": true,
+    "nim.lintOnSave": true,
+    "nim.nimsuggestRestartTimeout": 3
+}

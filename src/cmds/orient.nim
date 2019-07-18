@@ -23,26 +23,31 @@ proc orientBel(input_path: string, output_path: string,
     let bel = openBel(input_path, fmRead)
     defer: bel.close()
 
-    var edges: seq[Edge]
+
 
     case kind
     of oLowerTriangular:
-        for edge in bel.edges():
+        info("open ", output_path)
+        let out_bel = openBel(output_path, fmWrite)
+        defer: out_bel.close()
+        for _, edge in bel:
             if edge.src > edge.dst:
-                edges.add(edge)
+                out_bel.writeEdge(edge)
     of oUpperTriangular:
-        for edge in bel.edges():
+        let out_bel = openBel(output_path, fmWrite)
+        defer: out_bel.close()
+        for _, edge in bel:
             if edge.src < edge.dst:
-                edges.add(edge)
+                out_bel.writeEdge(edge)
     of oDegree:
         # compute degree of each node
         info("determine vert degrees")
         let
             sz = getFileSize(input_path)
             edge_est = sz div 24
-            vert_est = edge_est div 20 #
+            vert_est = edge_est div 1
         debug("est edges: ", edge_est, " est verts: ", vert_est)
-        var degrees = initTable[uint64, uint64](tables.rightSize(vert_est))
+        var degrees = initTable[int, int](tables.rightSize(vert_est))
         for edge in bel.edges():
             let d1 = degrees.getOrDefault(edge.src)
             degrees[edge.src] = d1 + 1
@@ -50,6 +55,7 @@ proc orientBel(input_path: string, output_path: string,
             degrees[edge.src] = d2 + 1
 
         info("orient edges by degree")
+        var edges: seq[Edge]
         for edge in bel.edges():
             if degrees[edge.src] == degrees[edge.dst]:
                 if edge.src < edge.dst:
@@ -57,13 +63,13 @@ proc orientBel(input_path: string, output_path: string,
             elif degrees[edge.src] < degrees[edge.dst]:
                 edges.add(edge)
 
-    info("write ", len(edges), " edges")
+        info("write ", len(edges), " edges")
 
-    info("open ", output_path)
-    let out_bel = openBel(output_path, fmWrite)
-    defer: out_bel.close()
-    for edge in edges:
-        out_bel.writeEdge(edge)
+        info("open ", output_path)
+        let out_bel = openBel(output_path, fmWrite)
+        defer: out_bel.close()
+        for edge in edges:
+            out_bel.writeEdge(edge)
 
 
 
