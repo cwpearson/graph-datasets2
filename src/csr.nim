@@ -1,5 +1,4 @@
 import edge
-import logger
 
 type
     Csr*[V, E] = object

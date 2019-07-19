@@ -10,10 +10,11 @@
                 "isDefault": true
             },
             "type": "shell",
-            "command": "nim",
+            "command": "nimble",
             "args": [
-                "c",
-                "src/graph_datasets.nim"
+                "build",
+                "-d:release",
+                "-d:ssl"
             ],
             "options": {
                 "cwd": "${workspaceRoot}"
