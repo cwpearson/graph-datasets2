@@ -15,14 +15,14 @@ type FilterKind = enum
 
 proc toSeconds(d: Duration): float =
     result = float(d.inNanoseconds) / 1e9
-    
+
 
 proc tc (path: string, filter_kind: FilterKind) =
     let datasetKind = guessFormat(path)
 
-    proc lt(edge: Edge):  bool {.inline.} = 
+    proc lt(edge: Edge): bool {.inline.} =
         return edge.src < edge.dst
-    proc ut(edge: Edge): bool {.inline.} = 
+    proc ut(edge: Edge): bool {.inline.} =
         return edge.dst < edge.src
     proc full(edge: Edge): bool {.inline.} = true
 
@@ -33,7 +33,7 @@ proc tc (path: string, filter_kind: FilterKind) =
     case datasetKind
     of dkBel:
 
-        var 
+        var
             start: Time
             elapsed: Duration
             eps: float

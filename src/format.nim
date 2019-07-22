@@ -1,12 +1,14 @@
 import os
 
-type DatasetKind * = enum
+type DatasetKind* = enum
     dkBel
     dkTsv
     dkTwitter
+    dkBmtx
+    dkmtx
     dkUnknown
 
-proc guessFormat *(path: string): DatasetKind = 
+proc guessFormat *(path: string): DatasetKind =
     let splittedPath = splitPath(path)
     if splittedPath.tail == "twitter_rv.net":
         return dkTwitter
@@ -16,5 +18,9 @@ proc guessFormat *(path: string): DatasetKind =
         return dkBel
     elif splittedFile.ext == ".tsv":
         return dkTsv
+    elif splittedFile.ext == ".bmtx":
+        return dkBmtx
+    elif splittedFile.ext == ".mtx":
+        return dkMtx
 
     return dkUnknown

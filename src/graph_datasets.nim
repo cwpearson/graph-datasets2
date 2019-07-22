@@ -3,6 +3,7 @@
 import argparse
 import os
 import logger
+import logging
 
 import cmds/cacherows
 import cmds/convert

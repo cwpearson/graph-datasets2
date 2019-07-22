@@ -10,19 +10,59 @@ import logger
 import edge_stream
 
 type
-    Mtx* = object of RootObj
+    MtxStream* = ref MtxStreamObj
+    MtxStreamObj = object of EdgeStream
         rows: int
         cols: int
         entries: int
-        stream: Stream
-    MtxReader* = object of Mtx
-        line: string
         entries_pos: int
-    MtxWriter* = object of Mtx
         num_edges_written: int
 
-proc initMtxWriter *(stream: Stream, rows, cols, entries: int): MtxWriter =
+proc msReadEdge(es: EdgeStream, edge: var Edge): bool =
+    # start reading after the comments/header
+    let datapos = MtxStream(es).entries_pos
+    if es.getPosition() < data_pos:
+        debug(&"set position past header: {datapos}")
+        es.setPosition(datapos)
+    for line in es.stream.lines():
+        if line.strip() == "":
+            debug("skip empty line")
+            continue
+        else:
+            var
+                src, dst: int
+                weight: float
+            debug("parsing line: ", line)
+            if scanf(line, "$s$i$s$i$s$f", src, dst, weight):
+                assert src <= MtxStream(es).rows
+                assert dst <= MtxStream(es).cols
+                edge = initEdge(src-1, dst-1, weight)
+                return true
+            elif not es.atEnd():
+                error("error parsing line ", line)
+                return false
+    return false
+
+
+proc msWriteEdge(es: EdgeStream, edge: Edge) =
+    let
+        src = edge.src + 1
+        dst = edge.dst + 1
+        weight = edge.weight
+    assert src <= MtxStream(es).rows
+    assert dst <= MtxStream(es).cols, &"edge with col {dst} is outside matrix {MtxStream(es).cols}"
+    assert MtxStream(es).num_edges_written < MtxStream(es).entries, &"wrote more edges {MtxStream(es).num_edges_written} than expected {MtxStream(es).entries}"
+    es.stream.writeLine($src & "\t" & $dst & "\t" & $weight)
+    MtxStream(es).num_edges_written += 1
+
+proc newMtxStream(stream: Stream): MtxStream =
+    new(result)
     result.stream = stream
+    result.readEdgeImpl = msReadEdge
+    result.writeEdgeImpl = msWriteEdge
+
+proc newMtxWriter *(stream: Stream, rows, cols, entries: int): MtxStream =
+    result = newMtxStream(stream)
     result.rows = rows
     result.cols = cols
     result.entries = entries
@@ -30,19 +70,9 @@ proc initMtxWriter *(stream: Stream, rows, cols, entries: int): MtxWriter =
     result.stream.writeLine(&"{result.rows} {result.cols} {result.entries}")
     result.num_edges_written = 0
 
-proc writeEdge *(t: var MtxWriter, edge: Edge) =
-    let
-        src = edge.src
-        dst = edge.dst
-        weight = edge.weight
-    assert src <= t.rows
-    assert dst <= t.cols
-    assert t.num_edges_written < t.entries
-    t.stream.writeLine([$src, $dst, $weight].join("\t"))
-    t.num_edges_written += 1
 
-proc initMtxReader *(stream: Stream): MtxReader =
-    result.stream = stream
+proc newMtxReader *(stream: Stream): MtxStream =
+    result = newMtxStream(stream)
     for line in result.stream.lines():
         # skip comment lines
         if line.startsWith("%"):
@@ -56,28 +86,6 @@ proc initMtxReader *(stream: Stream): MtxReader =
         break
 
 
-iterator edges*(t: MtxReader): Edge =
-    # start reading after the comments/header
-    debug("data starts at position: ")
-    t.stream.setPosition(t.entries_pos)
-    for line in t.stream.lines():
-        if line.strip() == "":
-            debug("skip empty line")
-            continue
-        else:
-            var
-                src, dst: int
-                weight: float
-            debug("parsing line: ", line)
-            if scanf(line, "$s$i$s$i$s$f", src, dst, weight):
-                assert src <= t.rows
-                assert dst <= t.cols
-                let edge = initEdge(src-1, dst-1, weight)
-                yield edge
-            else:
-                if not t.stream.atEnd():
-                    error("error parsing line ", line)
-
 when isMainModule:
     let contents = """%test  data
     1 2 3
@@ -85,13 +93,15 @@ when isMainModule:
     1   2   2.0
     """
     var stream = newStringStream(contents)
-    var reader = initMtxReader(stream)
+    var reader = newMtxReader(stream)
     for edge in reader.edges():
         echo edge
 
     var ostream = newStringStream()
-    var writer = initMtxWriter(ostream, 1, 2, 2)
+    var writer = newMtxWriter(ostream, 1, 2, 2)
+    reader.setPosition(0)
     for edge in reader.edges():
+        echo edge
         writer.writeEdge(edge)
 
     echo ostream.data

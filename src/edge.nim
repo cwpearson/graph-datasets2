@@ -5,8 +5,9 @@ type Edge* = object of RootObj
     dst*: int
     weight*: float64
 
-proc initEdge *(src: int, dst: int): Edge =
-    Edge(src: src, dst: dst, weight: 1.0'f64)
+proc initEdge *(src: int, dst: int, weight: float = 1.0'f64): Edge =
+    Edge(src: src, dst: dst, weight: weight)
+
 
 proc hash *(x: Edge): Hash =
     ## Computes a Hash from `x`.

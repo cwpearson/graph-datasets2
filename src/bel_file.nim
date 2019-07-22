@@ -37,7 +37,7 @@ method readEdge *(this: Bel, edge: var Edge): bool {.base.} =
     return false
 
 iterator edges *(this: Bel): Edge =
-    var buffer: array[3, uint64]
+    var buffer {.noinit.}: array[3, uint64]
     this.strm.setPosition(0)
     while not this.strm.atEnd():
         this.strm.read(buffer)

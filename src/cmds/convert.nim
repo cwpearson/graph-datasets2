@@ -6,6 +6,7 @@ import algorithm
 import tables
 import os
 import sets
+import strformat
 
 import ../edge
 import ../logger
@@ -13,6 +14,9 @@ import ../twitter_dataset
 import ../tsv_file
 import ../bel_file
 import ../format
+import ../bmtx
+import ../mtx
+import ../edge_stream
 
 
 
@@ -31,6 +35,7 @@ proc convert (src: string, dst: string): int {.discardable.} =
         quit(1)
 
     info("converting ", src, " ", srcKind, " to ", dst, " ", dstKind)
+
 
     if srcKind == dkTwitter and (dstKind == dkBel or dstKind == dkTsv):
 
@@ -99,6 +104,39 @@ proc convert (src: string, dst: string): int {.discardable.} =
 
         for edge in bel.edges():
             tsv.writeEdge(edge)
+
+    elif srcKind == dkBel and (dstKind == dkMtx or dstKind == dkBmtx):
+        var
+            bel = openBel(src, fmRead)
+
+        # read bel file to find entries, rows, and cols
+        var
+            nnz = 0
+            rows = low(int)
+            cols = low(int)
+        info(&"read {src} for matrix dimensions")
+        for edge in bel.edges():
+            rows = max(rows, edge.src)
+            cols = max(cols, edge.dst)
+            nnz += 1
+        info(&"got {rows+1} rows, {cols+1} cols, and {nnz} nnz")
+
+        var ostream = newFileStream(dst, fmWrite)
+        var es: EdgeStream
+
+        info(&"copy to {dstKind}")
+        if dstKind == dkMtx:
+            es = newMtxWriter(ostream, rows+1, cols+1, nnz)
+        elif dstKind == dkBmtx:
+            es = newBmtxWriter(ostream, rows+1, cols+1, nnz)
+        else:
+            error(&"unexpected dst kind {dstKind}")
+
+        for edge in bel.edges():
+            es.writeEdge(edge)
+
+        bel.close()
+        ostream.close()
 
     else:
         error("don't know how to convert ", srcKind, " to ", dstKind)
