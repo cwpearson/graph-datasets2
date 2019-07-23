@@ -14,9 +14,12 @@ Manage a variety of graph datasets
 
 ## Building
 
+Install the latest stable version of nim, then
+
 ```
 nimble build -d:release
 ./graph_datasets --help
+./tc --help
 ```
 
 ## Complete
@@ -41,11 +44,19 @@ nimble build -d:release
     - [x] a few graph challenge datasets 
     - [ ] listing / filtering datasets
       - [x] preliminary filtering by name
+      - [ ] filter by source (`--source graphchallenge`)
+      - [ ] filter name by regex (`--re "graph500*"`)
+    - [ ] `--continue` flag to resume a download
 
 ## Not yet started
 
 - [ ] Visualization of datasets
 - [ ] Verification of datsets
 - [ ] partitioning datasets
+- [ ] provide binaries
+  - [ ] linux / amd64
+  - [ ] maxOS / amd64
+  - [ ] windows / amd64
+  - [ ] ppc64le / amd64
 
 *Copyright Carl Pearson 2019*
