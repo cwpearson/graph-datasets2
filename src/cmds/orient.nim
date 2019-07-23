@@ -6,10 +6,11 @@ import os
 import algorithm
 
 import ../edge
-import ../bel_file
+import ../bel
 import ../format
 import ../logger
 import ../dict
+import ../edge_stream
 
 type Orientation* = enum
     oLowerTriangular
@@ -20,7 +21,7 @@ proc orientBel(input_path: string, output_path: string,
         kind: Orientation): int {.discardable.} =
 
     info("open ", input_path)
-    let bel = openBel(input_path, fmRead)
+    let bel = openBelStream(input_path, fmRead)
     defer: bel.close()
 
 
@@ -28,13 +29,13 @@ proc orientBel(input_path: string, output_path: string,
     case kind
     of oLowerTriangular:
         info("open ", output_path)
-        let out_bel = openBel(output_path, fmWrite)
+        let out_bel = openBelStream(output_path, fmWrite)
         defer: out_bel.close()
         for _, edge in bel:
             if edge.src > edge.dst:
                 out_bel.writeEdge(edge)
     of oUpperTriangular:
-        let out_bel = openBel(output_path, fmWrite)
+        let out_bel = openBelStream(output_path, fmWrite)
         defer: out_bel.close()
         for _, edge in bel:
             if edge.src < edge.dst:
@@ -61,7 +62,7 @@ proc orientBel(input_path: string, output_path: string,
         info("write ", len(edges), " edges")
 
         info("open ", output_path)
-        let out_bel = openBel(output_path, fmWrite)
+        let out_bel = openBelStream(output_path, fmWrite)
         defer: out_bel.close()
         for edge in edges:
             out_bel.writeEdge(edge)

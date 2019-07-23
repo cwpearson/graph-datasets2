@@ -8,7 +8,7 @@ proc setLevel *(lvl: Level) =
     consoleLog.levelThreshold = lvl
 
 template debug*(args: varargs[string, `$`]) =
-    while not defined(release):
+    if not defined(release):
         log(lvlDebug, args)
 
 template info*(args: varargs[string, `$`]) =

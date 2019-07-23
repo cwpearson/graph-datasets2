@@ -1,101 +1,31 @@
-# Reader for the matrix market exchange coodinate format
-
-import edge
 import streams
 import strutils
 import strscans
 import strformat
 
-import logger
-
-
-type
-    Bmtx* = object of RootObj
-        rows: int
-        cols: int
-        entries: int
-        stream: Stream
-    BmtxReader* = object of Bmtx
-        line: string
-    BmtxWriter* = object of Bmtx
-        entries_written: int
-
-proc writeHeader (t: var BmtxWriter) =
-    let buf = [int64(t.rows), int64(t.cols), int64(t.entries)]
-    t.stream.write(buf)
-
-proc initBmtxWriter *(stream: Stream, rows, cols, entries: int): BmtxWriter =
-    result.stream = stream
-    result.rows = rows
-    result.cols = cols
-    result.entries = entries
-    result.entries_written = 0
-    result.writeHeader()
-
-
-proc writeEdge *(t: var BmtxWriter, edge: Edge) =
-    let
-        src = edge.src + 1
-        dst = edge.dst + 1
-        weight = edge.weight
-    debug(&"writing edge {edge} src:{src} dst:{dst} weight:{weight}")
-    assert src <= t.rows, &"src {src} should be less than rows {t.rows}"
-    assert dst <= t.cols
-    assert t.entries_written < t.entries
-    t.stream.write(int64(src))
-    t.stream.write(int64(dst))
-    t.stream.write(float64(weight))
-    t.entries_written += 1
-
-proc initBmtxReader *(stream: Stream): BmtxReader =
-    result.stream = stream
-
-    # read the header
-    var buf: array[3, int64]
-    result.stream.read(buf)
-    result.rows = int(buf[0])
-    result.cols = int(buf[1])
-    result.entries = int(buf[2])
-
-    debug(&"bmtx header: {result.rows} rows {result.cols} cols {result.entries} entries")
-
-
-
-
-
-
-
-
-
 import edge
-import streams
-import strutils
-import strscans
-import strformat
-
 import logger
 import edge_stream
 
 type
-    BmtxStream* = ref BmtxStreamObj
-    BmtxStreamObj = object of EdgeStream
+    BmtxStream* = ref object of EdgeStream
         rows: int
         cols: int
         entries: int
         entries_written: int
 
-proc bsReadEdge(es: EdgeStream, edge: var Edge): bool =
-    if es.getPosition() < 24:
-        es.setPosition(24)
+method readEdge(s: BmtxStream, edge: var Edge): bool =
+    if s.getPosition() < 24:
+        s.setPosition(24)
     var buf: tuple[src: int64, dst: int64, weight: float64]
 
-    if es.stream.atEnd():
+    if s.atEnd():
         return false
     else:
-        es.stream.read(buf)
+        s.stream.read(buf)
         let
             (src, dst, weight) = buf
-        let maxrows = BmtxStream(es).rows
+        let maxrows = s.rows
         if src > maxrows:
             warn(&"binary mtx file has a src {src} > rows {maxrows}")
         edge = initEdge(int(src) - 1, int(dst) - 1, float(weight))
@@ -103,23 +33,21 @@ proc bsReadEdge(es: EdgeStream, edge: var Edge): bool =
 
 
 
-proc bsWriteEdge(es: EdgeStream, edge: Edge) =
+method writeEdge(s: BmtxStream, edge: Edge) =
     let
         src = edge.src + 1
         dst = edge.dst + 1
         weight = edge.weight
-    debug(&"writing edge {edge} src:{src} dst:{dst} weight:{weight}")
-    assert src <= BmtxStream(es).rows, &"src {src} should be less than rows {BmtxStream(es).rows}"
-    assert dst <= BmtxStream(es).cols
-    assert BmtxStream(es).entries_written < BmtxStream(es).entries
-    es.stream.write((int64(src), int64(dst), float64(weight)))
-    BmtxStream(es).entries_written += 1
+    debug(&"writing edge {edge} -> src:{src} dst:{dst} weight:{weight}")
+    assert src <= s.rows, &"src {src} should be less than rows {s.rows}"
+    assert dst <= s.cols
+    assert s.entries_written < s.entries
+    s.stream.write((int64(src), int64(dst), float64(weight)))
+    s.entries_written += 1
 
 proc newBmtxStream(stream: Stream): BmtxStream =
     new(result)
     result.stream = stream
-    result.readEdgeImpl = bsReadEdge
-    result.writeEdgeImpl = bsWriteEdge
 
 proc writeHeader (t: var BmtxStream) =
     let buf = [int64(t.rows), int64(t.cols), int64(t.entries)]
@@ -133,6 +61,9 @@ proc newBmtxWriter *(stream: Stream, rows, cols, entries: int): BmtxStream =
     result.writeHeader()
     result.entries_written = 0
 
+proc openBmtxWriter *(path: string, rows, cols, entries: int): BmtxStream = 
+    var stream = newFileStream(path, fmWrite)
+    result = newBmtxWriter(stream, rows, cols, entries)
 
 proc newBmtxReader *(stream: Stream): BmtxStream =
     result = newBmtxStream(stream)
@@ -145,6 +76,9 @@ proc newBmtxReader *(stream: Stream): BmtxStream =
 
     debug(&"read bmtx header: {result.rows} rows {result.cols} cols {result.entries} entries")
 
+proc openBmtxReader *(path: string): BmtxStream = 
+    var stream = newFileStream(path, fmRead)
+    result = newBmtxReader(stream)
 
 when isMainModule:
     var ostream = newStringStream()
