@@ -22,7 +22,7 @@ proc tc (path: string, filter_kind: FilterKind) =
     let datasetKind = guessFormat(path)
 
     proc lt(edge: Edge): bool {.inline.} =
-        return edge.src < edge.dst
+        return edge.src > edge.dst
     proc ut(edge: Edge): bool {.inline.} =
         return edge.dst < edge.src
     proc full(edge: Edge): bool {.inline.} = true
