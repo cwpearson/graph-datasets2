@@ -40,6 +40,7 @@ install:
 script:
     - nimble refresh
     - nimble test
+    - nimble build
 
 branches:
   except:
