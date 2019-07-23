@@ -5,7 +5,7 @@ type DatasetKind* = enum
     dkTsv
     dkTwitter
     dkBmtx
-    dkmtx
+    dkMtx
     dkUnknown
 
 proc guessFormat *(path: string): DatasetKind =
@@ -24,3 +24,10 @@ proc guessFormat *(path: string): DatasetKind =
         return dkMtx
 
     return dkUnknown
+
+proc isEdgeList *(dk: DatasetKind): bool =
+    case dk
+    of dkBel, dkBmtx, dkMtx, dkTsv:
+        return true
+    of dkTwitter, dkUnknown:
+        return false

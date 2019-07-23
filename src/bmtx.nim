@@ -61,6 +61,9 @@ proc newBmtxWriter *(stream: Stream, rows, cols, entries: int): BmtxStream =
     result.writeHeader()
     result.entries_written = 0
 
+proc openBmtxWriter *(path: string, rows, cols, entries: int): BmtxStream = 
+    var stream = newFileStream(path, fmWrite)
+    result = newBmtxWriter(stream, rows, cols, entries)
 
 proc newBmtxReader *(stream: Stream): BmtxStream =
     result = newBmtxStream(stream)
@@ -73,6 +76,9 @@ proc newBmtxReader *(stream: Stream): BmtxStream =
 
     debug(&"read bmtx header: {result.rows} rows {result.cols} cols {result.entries} entries")
 
+proc openBmtxReader *(path: string): BmtxStream = 
+    var stream = newFileStream(path, fmRead)
+    result = newBmtxReader(stream)
 
 when isMainModule:
     var ostream = newStringStream()

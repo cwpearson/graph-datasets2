@@ -11,12 +11,13 @@ import strformat
 import ../edge
 import ../logger
 import ../twitter_dataset
-import ../tsv_file
-import ../bel_file
+import ../tsv
+import ../bel
 import ../format
 import ../bmtx
 import ../mtx
 import ../edge_stream
+import ../graph_challenge
 
 
 
@@ -37,7 +38,7 @@ proc convert (src: string, dst: string): int {.discardable.} =
     info("converting ", src, " ", srcKind, " to ", dst, " ", dstKind)
 
 
-    if srcKind == dkTwitter and (dstKind == dkBel or dstKind == dkTsv):
+    if srcKind == dkTwitter and isEdgeList(dstKind):
 
         var initialSize = sets.rightSize(3_000_000_000)
         var edges = initHashSet[Edge](initialSize)
@@ -67,28 +68,30 @@ proc convert (src: string, dst: string): int {.discardable.} =
         debug("making sortable...")
         var sortedEdges = toSeq(edges)
         debug("sorting...")
-        sort(sortedEdges, bel_file.cmp)
+        sort(sortedEdges, graph_challenge.cmp)
 
-        case dstKind
+        var es = case dstKind
         of dkTsv:
-            debug("writing ", dst)
-            var tsv = openTsv(dst, fmWrite)
-            for e in sortedEdges:
-                tsv.writeEdge(e)
+            openTsvStream(dst, fmWrite)
         of dkBel:
-            debug("writing ", dst)
-            var bel = openBel(dst, fmWrite)
-            for e in sortedEdges:
-                bel.writeEdge(e)
+            openBelStream(dst, fmWrite)
+        # of dkBmtx:
+            # openBmtxWriter(dst)
+        # of dkMtx:
+            # openMtxWriter(dst)
         else:
             error("unexpected dstKind ", dstKind)
             quit(1)
 
+        notice("writing ", dst)
+        for edge in sortedEdges:
+            es.writeEdge(edge)
+
     elif srcKind == dkTsv and dstKind == dkBel:
         debug(src, " -> ", dst)
         var
-            tsv = openTsv(src, fmRead)
-            bel = openBel(dst, fmWrite)
+            tsv = openTsvStream(src, fmRead)
+            bel = openBelStream(dst, fmWrite)
         defer: tsv.close()
         defer: bel.close()
 
@@ -97,8 +100,8 @@ proc convert (src: string, dst: string): int {.discardable.} =
             bel.writeEdge(edge)
     elif srcKind == dkBel and dstKind == dkTsv:
         var
-            bel = openBel(src, fmRead)
-            tsv = openTsv(dst, fmWrite)
+            bel = openBelStream(src, fmRead)
+            tsv = openTsvStream(dst, fmWrite)
         defer: tsv.close()
         defer: bel.close()
 
@@ -107,7 +110,7 @@ proc convert (src: string, dst: string): int {.discardable.} =
 
     elif srcKind == dkBel and (dstKind == dkMtx or dstKind == dkBmtx):
         var
-            bel = openBel(src, fmRead)
+            bel = openBelStream(src, fmRead)
 
         # read bel file to find entries, rows, and cols
         var

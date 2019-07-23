@@ -2,10 +2,11 @@ import strformat
 import times
 
 import ../csr
-import ../bel_file
+import ../bel
 import ../format
 import ../logger
 import ../edge
+import ../edge_stream
 
 
 type FilterKind = enum
@@ -39,7 +40,7 @@ proc tc (path: string, filter_kind: FilterKind) =
             eps: float
 
         debug("open ", path)
-        let bel = openBel(path, fmRead)
+        let bel = openBelStream(path, fmRead)
         defer: bel.close()
 
         notice("build CSR")

@@ -9,9 +9,10 @@ import sets
 import math
 
 import ../edge
-import ../bel_file
+import ../bel
 import ../format
 import ../logger
+import ../edge_stream
 
 type Stats = tuple
     numEdges: int
@@ -39,7 +40,7 @@ proc count (path: string): int {.discardable.} =
     case datasetKind
     of dkBel:
         info("open ", path)
-        let bel = openBel(path, fmRead)
+        let bel = openBelStream(path, fmRead)
         defer: bel.close()
         var stats = initStats()
         let

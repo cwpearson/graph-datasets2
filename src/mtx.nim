@@ -70,6 +70,14 @@ proc newMtxWriter *(stream: Stream, rows, cols, entries: int): MtxStream =
     result.num_edges_written = 0
 
 
+proc openMtxWriter *(path: string, rows, cols, entries: int): MtxStream = 
+    var stream = newFileStream(path, fmWrite)
+    result = newMtxWriter(stream, rows, cols, entries)
+
+
+
+
+
 proc newMtxReader *(stream: Stream): MtxStream =
     result = newMtxStream(stream)
     for line in result.stream.lines():
@@ -85,6 +93,9 @@ proc newMtxReader *(stream: Stream): MtxStream =
         result.entries_pos = result.stream.getPosition()
         break
 
+proc openMtxReader *(path: string): MtxStream = 
+    var stream = newFileStream(path, fmRead)
+    result = newMtxReader(stream)
 
 when isMainModule:
     let contents = """%test  data

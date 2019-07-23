@@ -21,7 +21,16 @@ method getPosition* (s: EdgeStream): int {.base.} =
 method setPosition* (s: EdgeStream, pos: int) {.base.} = 
     s.stream.setPosition(pos) 
 
+method close* (s: EdgeStream) {.base.} = 
+    s.stream.close()
+
 iterator edges*(s: EdgeStream): Edge =
     var edge: Edge
     while s.readEdge(edge):
         yield edge
+
+iterator pairs*(s: EdgeStream): (int, Edge) =
+    var cnt = 0
+    for edge in s.edges():
+        yield (cnt, edge)
+        cnt += 1

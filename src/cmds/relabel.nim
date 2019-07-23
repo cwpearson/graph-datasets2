@@ -6,10 +6,12 @@ import algorithm
 import os
 
 import ../edge
-import ../bel_file
+import ../bel
 import ../format
 import ../logger
 import ../dict
+import ../edge_stream
+import ../graph_challenge
 
 type Method* = enum
     mCompact
@@ -18,7 +20,7 @@ type Method* = enum
 proc relabelBel(input_path, output_path: string): int {.discardable.} =
 
     info("open ", input_path)
-    let bel = openBel(input_path, fmRead)
+    let bel = openBelStream(input_path, fmRead)
     defer: bel.close()
     let orientation = mCompact
 
@@ -75,11 +77,11 @@ proc relabelBel(input_path, output_path: string): int {.discardable.} =
 
 
     # sort edges by src
-    info("sort edges")
-    sort(edges, bel_file.cmp)
+    info("sort edges into graph challenge order")
+    sort(edges, graph_challenge.cmp)
 
     info("write ", len(edges), " edges to ", output_path)
-    let out_bel = openBel(output_path, fmWrite)
+    let out_bel = openBelStream(output_path, fmWrite)
     defer: out_bel.close()
     for edge in edges:
         out_bel.writeEdge(edge)
