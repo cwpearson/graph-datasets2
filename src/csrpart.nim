@@ -18,7 +18,7 @@ proc initCsrPart*[V, E] (num_rows: int, nnz: int): CsrPart[V, E] =
     ## create a new CsrPart
     ##
     result.num_parts = 6
-    result.part_size = num_rows div result.num_parts
+    result.part_size = (num_rows + result.num_parts - 1) div result.num_parts
     result.row_ptrs = newSeq[seq[E]](result.num_parts+1)
     result.col_ind = newSeqOfCap[V](nnz)
 
@@ -63,8 +63,8 @@ proc addEdge*[V, E] (t: var CsrPart[V, E], edge: Edge): int {.discardable.} =
     t.col_ind.add(dst)
 
     # all partitions after the one we are in start 1 later
-    let edgePart = min((dst div t.part_size) + 1, num_parts(t))
-    debug(&"partition {edgePart-1}")
+    let edgePart = min((dst div t.part_size), num_parts(t))
+    debug(&"partition {edgePart}")
     for i in (edgePart+1)..num_parts(t):
         t.row_ptrs[i][^1] += 1
 
