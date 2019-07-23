@@ -25,6 +25,7 @@ method close* (s: EdgeStream) {.base.} =
     s.stream.close()
 
 iterator edges*(s: EdgeStream): Edge =
+    s.setPosition(0)
     var edge: Edge
     while s.readEdge(edge):
         yield edge
