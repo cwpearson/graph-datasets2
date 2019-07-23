@@ -7,9 +7,13 @@ import tables
 import os
 import sets
 import math
+import strformat
 
 import ../edge
 import ../bel
+import ../tsv
+import ../mtx
+import ../bmtx
 import ../format
 import ../logger
 import ../edge_stream
@@ -34,58 +38,82 @@ proc initStats(): Stats =
         deg0Verts: 0,
     )
 
-proc count (path: string): int {.discardable.} =
-    let datasetKind = guessFormat(path)
-
-    case datasetKind
+proc guessFormatAndOpenReader(path: string, hint: DatasetKind = dkUnknown): EdgeStream = 
+    var kind = hint
+    if kind == dkUnknown:
+        kind = guessFormat(path)
+    result = case kind
     of dkBel:
-        info("open ", path)
-        let bel = openBelStream(path, fmRead)
-        defer: bel.close()
-        var stats = initStats()
-        let
-            sz = getFileSize(path)
-            edge_est = sz div 24
-            vert_est = edge_est div 1 #
-        debug("estimate ", edge_est, " edges -> ", vert_est, " verts")
-        var deg = initTable[int, int](tables.rightSize(vert_est))
-        # var deg: Table[int, int]
-
-        info("determine degrees ", path)
-        for i, edge in bel:
-            stats.numEdges += 1
-            let d1 = deg.getOrDefault(edge.src)
-            deg[edge.src] = d1+1
-            let d2 = deg.getOrDefault(edge.dst)
-            deg[edge.dst] = d2
-            if i mod (1024 * 1024) == 0:
-                debug("edge ", i, "...")
-
-        stats.numVerts = len(deg)
-
-        info("summarize degrees (1/2)")
-        var total = 0
-        for _, outdeg in deg:
-            total += outdeg
-            stats.minDeg = min(stats.minDeg, outdeg)
-            stats.maxDeg = max(stats.maxDeg, outdeg)
-            if outdeg == 0:
-                stats.deg0Verts += 1
-        stats.avgDeg = float(total) / float(len(deg))
-
-        info("summarize degrees (2/2)")
-        var std_dev = 0.0
-        for _, outdeg in deg:
-            std_dev += pow(float(outdeg) - stats.avgDeg, 2)
-        std_dev /= float(len(deg) - 1)
-        std_dev = math.sqrt(std_dev)
-        stats.stddevDeg = std_dev
-
-
-        echo stats
+        info(&"opening {path} as BEL file")
+        openBelStream(path, fmRead)
+    of dkTsv:
+        info(&"opening {path} as TSV file")
+        openTsvStream(path, fmRead)
+    of dkMtx:
+        info(&"opening {path} as MTX file")
+        openMtxReader(path)
+    of dkBMtx:
+        info(&"opening {path} as BMTX file")
+        openBmtxReader(path)
     else:
-        error("ERROR can't count for ", path, " of kind ", datasetKind)
+        error(&"couldn't guess format for {path}")
+        nil
+
+
+
+proc count (path: string): int {.discardable.} =
+    info("open ", path)
+    var es = guessFormatAndOpenReader(path)
+    if es == nil:
+        error(&"can't count {path}")
         quit(1)
+
+
+        
+    var stats = initStats()
+    let
+        sz = getFileSize(path)
+        edge_est = sz div 24
+        vert_est = edge_est div 1 #
+    debug("estimate ", edge_est, " edges -> ", vert_est, " verts")
+    var deg = initTable[int, int](tables.rightSize(vert_est))
+    # var deg: Table[int, int]
+
+    info("count vert degrees ", path)
+    for i, edge in es:
+        stats.numEdges += 1
+        let d1 = deg.getOrDefault(edge.src)
+        deg[edge.src] = d1+1
+        let d2 = deg.getOrDefault(edge.dst)
+        deg[edge.dst] = d2
+        if i mod (1024 * 1024) == 0:
+            info(&"edge {i}...")
+
+    stats.numVerts = len(deg)
+    debug(&"{stats.numVerts} verts")
+
+    info("summarize degrees (1/2)")
+    var total = 0
+    for _, outdeg in deg:
+        total += outdeg
+        stats.minDeg = min(stats.minDeg, outdeg)
+        stats.maxDeg = max(stats.maxDeg, outdeg)
+        if outdeg == 0:
+            stats.deg0Verts += 1
+    stats.avgDeg = float(total) / float(len(deg))
+
+    info("summarize degrees (2/2)")
+    var std_dev = 0.0
+    for _, outdeg in deg:
+        std_dev += pow(float(outdeg) - stats.avgDeg, 2)
+    std_dev /= float(len(deg) - 1)
+    std_dev = math.sqrt(std_dev)
+    stats.stddevDeg = std_dev
+
+
+    echo stats
+    es.close()
+
 
 proc doCount *[T](opts: T): int {.discardable.} =
     count(opts.input)
