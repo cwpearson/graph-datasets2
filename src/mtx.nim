@@ -12,9 +12,9 @@ import logger
 
 type
     MtxStream* = ref object of EdgeStream
-        rows: int
-        cols: int
-        entries: int
+        rows*: int
+        cols*: int
+        entries*: int
         entries_pos: int
         num_edges_written: int
 
@@ -70,8 +70,8 @@ proc newMtxWriter *(stream: Stream, rows, cols, entries: int): MtxStream =
     result.num_edges_written = 0
 
 
-proc openMtxWriter *(path: string, rows, cols, entries: int): MtxStream = 
-    var stream = newFileStream(path, fmWrite)
+proc openMtxWriter *(path: string, rows, cols, entries: int): MtxStream =
+    var stream = openFileStream(path, fmWrite)
     result = newMtxWriter(stream, rows, cols, entries)
 
 
@@ -93,8 +93,8 @@ proc newMtxReader *(stream: Stream): MtxStream =
         result.entries_pos = result.stream.getPosition()
         break
 
-proc openMtxReader *(path: string): MtxStream = 
-    var stream = newFileStream(path, fmRead)
+proc openMtxReader *(path: string): MtxStream =
+    var stream = openFileStream(path, fmRead)
     result = newMtxReader(stream)
 
 when isMainModule:
