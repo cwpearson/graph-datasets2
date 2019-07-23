@@ -8,7 +8,6 @@ srcDir        = "src"
 bin           = @["graph_datasets", "tc"]
 
 
-
 # Dependencies
 
 requires "nim >= 0.20.0"

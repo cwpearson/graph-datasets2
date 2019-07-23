@@ -11,6 +11,7 @@ import cmds/count
 import cmds/download
 import cmds/orient
 import cmds/relabel
+import cmds/version
 
 var p = newParser("grpah_datasets"):
   flag("--debug")
@@ -49,6 +50,9 @@ var p = newParser("grpah_datasets"):
     arg("output")
     run:
       doRelabel(opts)
+  command("version"):
+    run:
+      doVersion(opts)
 
 
 when isMainModule:

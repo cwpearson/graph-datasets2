@@ -18,6 +18,23 @@ matrix:
       env: CHANNEL=devel
       compiler: gcc
 
+    - os: linux
+      env: CHANNEL=stable CROSS_CPU=arm
+      compiler: gcc
+      addons: # This will only be executed on Linux
+        apt:
+          packages:
+            - gcc-arm-linux-gnueabihf
+
+    - os: linux
+      env: CHANNEL=stable CROSS_CPU=powerpc64el
+      compiler: gcc
+      addons: # This will only be executed on Linux
+        apt:
+          packages:
+            - gcc-powerpc64le-linux-gnu
+            - libc6-dev-ppc64el-cross
+
     # On OSX we only test against clang (gcc is mapped to clang by default)
     - os: osx
       env: CHANNEL=stable
@@ -26,23 +43,40 @@ matrix:
   allow_failures:
     # Ignore failures when building against the devel Nim branch
     - env: CHANNEL=devel
+    # allow arm to fail for integer conversion
+    - env: CHANNEL=stable CROSS_CPU=arm
 
   fast_finish: true
 
+
 install:
   - export CHOOSENIM_NO_ANALYTICS=1
-  - curl https://nim-lang.org/choosenim/init.sh -sSf > init.sh
-  - sh init.sh -y
   - export PATH=~/.nimble/bin:$PATH
-  - echo "export PATH=~/.nimble/bin:$PATH" >> ~/.profile
-  - choosenim $CHANNEL
+  - sh ci/install.sh
 
 script:
-    - nimble --version
-    - nim --version
-    - nimble refresh
-    - nimble test
-    - nimble build
+  - nimble --version
+  - nim --version
+  - nimble refresh
+  - sh ci/test.sh
+  - sh ci/build.sh
+
+after_script:
+  - ls
+  - sh ci/after_script.sh
+  - ls deploy
+
+before_deploy:
+  - ls deploy
+
+deploy:
+  provider: releases
+  api_key: $GITHUB_TOKEN
+  file: deploy/*
+  skip_cleanup: true
+  on:
+    tags: true
+  draft: true
 
 branches:
   except:
