@@ -9,9 +9,9 @@ import edge_stream
 
 type
     BmtxStream* = ref object of EdgeStream
-        rows: int
-        cols: int
-        entries: int
+        rows*: int
+        cols*: int
+        entries*: int
         entries_written: int
 
 method readEdge(s: BmtxStream, edge: var Edge): bool =
@@ -62,7 +62,7 @@ proc newBmtxWriter *(stream: Stream, rows, cols, entries: int): BmtxStream =
     result.entries_written = 0
 
 proc openBmtxWriter *(path: string, rows, cols, entries: int): BmtxStream =
-    var stream = newFileStream(path, fmWrite)
+    var stream = openFileStream(path, fmWrite)
     result = newBmtxWriter(stream, rows, cols, entries)
 
 proc newBmtxReader *(stream: Stream): BmtxStream =
@@ -77,7 +77,7 @@ proc newBmtxReader *(stream: Stream): BmtxStream =
     debug(&"read bmtx header: {result.rows} rows {result.cols} cols {result.entries} entries")
 
 proc openBmtxReader *(path: string): BmtxStream =
-    var stream = newFileStream(path, fmRead)
+    var stream = openFileStream(path, fmRead)
     result = newBmtxReader(stream)
 
 when isMainModule:
