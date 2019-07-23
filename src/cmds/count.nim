@@ -38,38 +38,16 @@ proc initStats(): Stats =
         deg0Verts: 0,
     )
 
-proc guessFormatAndOpenReader(path: string, hint: DatasetKind = dkUnknown): EdgeStream = 
-    var kind = hint
-    if kind == dkUnknown:
-        kind = guessFormat(path)
-    result = case kind
-    of dkBel:
-        info(&"opening {path} as BEL file")
-        openBelStream(path, fmRead)
-    of dkTsv:
-        info(&"opening {path} as TSV file")
-        openTsvStream(path, fmRead)
-    of dkMtx:
-        info(&"opening {path} as MTX file")
-        openMtxReader(path)
-    of dkBMtx:
-        info(&"opening {path} as BMTX file")
-        openBmtxReader(path)
-    else:
-        error(&"couldn't guess format for {path}")
-        nil
-
-
 
 proc count (path: string): int {.discardable.} =
     info("open ", path)
-    var es = guessFormatAndOpenReader(path)
+    var es = guessEdgeStreamReader(path)
     if es == nil:
         error(&"can't count {path}")
         quit(1)
 
 
-        
+
     var stats = initStats()
     let
         sz = getFileSize(path)
