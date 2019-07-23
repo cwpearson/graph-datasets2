@@ -1,4 +1,5 @@
 import edge
+import logger
 
 
 type
@@ -13,7 +14,7 @@ type
         col_ind: seq[V]
         max_vert: V
 
-proc initCsrPart*[V, E] (nnz: int, num_rows: int): CsrPart[V, E] =
+proc initCsrPart*[V, E] (num_rows: int, nnz: int): CsrPart[V, E] =
     ## create a new CsrPart
     ##
     result.num_parts = 6
@@ -30,13 +31,18 @@ proc num_rows*[V, E] (t: CsrPart[V, E]): int =
         assert len(rp) == len(t.row_ptrs[0])
     result = len(t.row_ptrs[0])
 
+proc partSize*[V, E] (t: CsrPart[V, E]): int =
+    result = t.part_size
+
 proc num_parts*[V, E] (t: CsrPart[V, E]): int =
-    result = numparts
+    result = t.num_parts
 
 proc addEdge*[V, E] (t: var CsrPart[V, E], edge: Edge): int {.discardable.} =
     let
         src = edge.src
         dst = edge.dst
+
+    debug(&"addEdge({edge})")
 
     # make sure the src is not behind the last src
     if src + 1 < num_rows(t):
@@ -44,6 +50,7 @@ proc addEdge*[V, E] (t: var CsrPart[V, E], edge: Edge): int {.discardable.} =
 
     # create all rows up to src
     while num_rows(t) <= src:
+        debug(&"row {num_rows(t)} starts at offset {len(t.col_ind)}")
         for i, _ in t.row_ptrs:
             t.row_ptrs[i].add(len(t.col_ind))
 
@@ -57,6 +64,7 @@ proc addEdge*[V, E] (t: var CsrPart[V, E], edge: Edge): int {.discardable.} =
 
     # all partitions after the one we are in start 1 later
     let edgePart = min((dst div t.part_size) + 1, num_parts(t))
+    debug(&"partition {edgePart-1}")
     for i in (edgePart+1)..num_parts(t):
         t.row_ptrs[i][^1] += 1
 
@@ -98,6 +106,12 @@ iterator edges*[V, E] (t: CsrPart[V, E]): tuple[src, dst: V] =
     for r in 0..<numRows(t):
         for c in t.row(r):
             yield (src: r, dst: c)
+
+iterator enum_edges*[V, E] (t: CsrPart[V, E]): (int, tuple[src, dst: V]) =
+    var i = 0
+    for edge in edges(t):
+        yield (i, edge)
+        i += 1
 
 when isMainModule:
     import unittest
