@@ -38,6 +38,8 @@ install:
   - choosenim $CHANNEL
 
 script:
+    - nimble --version
+    - nim --version
     - nimble refresh
     - nimble test
     - nimble build
