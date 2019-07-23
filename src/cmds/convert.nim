@@ -49,20 +49,27 @@ proc convert (src: string, dst: string): int {.discardable.} =
         var nextId = 0
 
         debug("reading & uniqifying ", src)
+        var
+            maxrow = low(int)
+            maxcol = low(int)
         var twitter = Twitter(path: src)
         for edge in twitter.edges():
-            # canonicalize the edge direction, since we will end up generating bidirectional edges
-            # this prevents duplicate edges if there is a bidirectional edge in the input graph
-            let user = edge.src
-            let follower = edge.dst
+            # canonicalize edge ID, and add a bi-directional version of each edge
+            let
+                user = edge.src
+                follower = edge.dst
             if not canonical.hasKeyOrPut(user, nextId):
                 nextId += 1
             if not canonical.hasKeyOrPut(follower, nextId):
                 nextId += 1
-            let src = canonical[user]
-            let dst = canonical[follower]
-            edges.incl(initEdge(src, dst))
-            edges.incl(initEdge(dst, src))
+            let
+                canonsrc = canonical[user]
+                canondst = canonical[follower]
+            edges.incl(initEdge(canonsrc, canondst))
+            edges.incl(initEdge(canondst, canonsrc))
+            maxrow = max(maxrow, canonsrc)
+            maxcol = max(maxrow, canondst)
+        let nnz = len(edges)
 
         # Sorting with custom proc
         debug("making sortable...")
@@ -70,76 +77,38 @@ proc convert (src: string, dst: string): int {.discardable.} =
         debug("sorting...")
         sort(sortedEdges, graph_challenge.cmp)
 
-        var es = case dstKind
-        of dkTsv:
-            openTsvStream(dst, fmWrite)
-        of dkBel:
-            openBelStream(dst, fmWrite)
-        # of dkBmtx:
-            # openBmtxWriter(dst)
-        # of dkMtx:
-            # openMtxWriter(dst)
-        else:
-            error("unexpected dstKind ", dstKind)
-            quit(1)
+        var es = guessEdgeStreamWriter(dst, maxrow+1, maxcol+1, nnz)
 
         notice("writing ", dst)
         for edge in sortedEdges:
             es.writeEdge(edge)
 
-    elif srcKind == dkTsv and dstKind == dkBel:
-        debug(src, " -> ", dst)
+    elif isEdgeList(srcKind) and isEdgeList(dstKind):
         var
-            tsv = openTsvStream(src, fmRead)
-            bel = openBelStream(dst, fmWrite)
-        defer: tsv.close()
-        defer: bel.close()
+            srces = guessEdgeStreamReader(src)
 
-        var edge: Edge
-        while tsv.readEdge(edge):
-            bel.writeEdge(edge)
-    elif srcKind == dkBel and dstKind == dkTsv:
+        # for some kinds of outputs, we need to know some info
         var
-            bel = openBelStream(src, fmRead)
-            tsv = openTsvStream(dst, fmWrite)
-        defer: tsv.close()
-        defer: bel.close()
-
-        for edge in bel.edges():
-            tsv.writeEdge(edge)
-
-    elif srcKind == dkBel and (dstKind == dkMtx or dstKind == dkBmtx):
-        var
-            bel = openBelStream(src, fmRead)
-
-        # read bel file to find entries, rows, and cols
-        var
-            nnz = 0
-            rows = low(int)
-            cols = low(int)
-        info(&"read {src} for matrix dimensions")
-        for edge in bel.edges():
-            rows = max(rows, edge.src)
-            cols = max(cols, edge.dst)
-            nnz += 1
-        info(&"got {rows+1} rows, {cols+1} cols, and {nnz} nnz")
-
-        var ostream = newFileStream(dst, fmWrite)
-        var es: EdgeStream
-
-        info(&"copy to {dstKind}")
-        if dstKind == dkMtx:
-            es = newMtxWriter(ostream, rows+1, cols+1, nnz)
-        elif dstKind == dkBmtx:
-            es = newBmtxWriter(ostream, rows+1, cols+1, nnz)
+            maxrows = 0
+            maxcols = 0
+            entries = 0
+        case dstKind
+        of dkBmtx, dkMtx:
+            info(&"read {src} for matrix dimensions")
+            for edge in srces.edges():
+                maxrows = max(maxrows, edge.src)
+                maxcols = max(maxcols, edge.dst)
+                entries += 1
+            info(&"got {maxrows+1} rows, {maxcols+1} cols, and {entries} nnz")
         else:
-            error(&"unexpected dst kind {dstKind}")
+            discard
 
-        for edge in bel.edges():
-            es.writeEdge(edge)
+        var dstes = guessEdgeStreamWriter(dst, maxrows+1, maxcols+1, entries)
+        notice(&"{src} -> {dst}")
+        for edge in srces.edges():
+            dstes.writeEdge(edge)
 
-        bel.close()
-        ostream.close()
+
 
     else:
         error("don't know how to convert ", srcKind, " to ", dstKind)
