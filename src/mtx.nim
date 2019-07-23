@@ -1,30 +1,30 @@
 # Reader for the matrix market exchange coodinate format
 
-import edge
-import streams
 import strutils
-import strscans
 import strformat
+import streams
+import strscans
 
-import logger
+import edge
 import edge_stream
+import logger
+
 
 type
-    MtxStream* = ref MtxStreamObj
-    MtxStreamObj = object of EdgeStream
+    MtxStream* = ref object of EdgeStream
         rows: int
         cols: int
         entries: int
         entries_pos: int
         num_edges_written: int
 
-proc msReadEdge(es: EdgeStream, edge: var Edge): bool =
+method readEdge *(s: MtxStream, edge: var Edge): bool =
     # start reading after the comments/header
-    let datapos = MtxStream(es).entries_pos
-    if es.getPosition() < data_pos:
+    let datapos = s.entries_pos
+    if s.getPosition() < data_pos:
         debug(&"set position past header: {datapos}")
-        es.setPosition(datapos)
-    for line in es.stream.lines():
+        s.setPosition(datapos)
+    for line in s.stream.lines():
         if line.strip() == "":
             debug("skip empty line")
             continue
@@ -34,32 +34,31 @@ proc msReadEdge(es: EdgeStream, edge: var Edge): bool =
                 weight: float
             debug("parsing line: ", line)
             if scanf(line, "$s$i$s$i$s$f", src, dst, weight):
-                assert src <= MtxStream(es).rows
-                assert dst <= MtxStream(es).cols
+                assert src <= s.rows
+                assert dst <= s.cols
                 edge = initEdge(src-1, dst-1, weight)
                 return true
-            elif not es.atEnd():
+            elif not s.atEnd():
                 error("error parsing line ", line)
                 return false
     return false
 
 
-proc msWriteEdge(es: EdgeStream, edge: Edge) =
+method writeEdge(s: MtxStream, edge: Edge) =
     let
         src = edge.src + 1
         dst = edge.dst + 1
         weight = edge.weight
-    assert src <= MtxStream(es).rows
-    assert dst <= MtxStream(es).cols, &"edge with col {dst} is outside matrix {MtxStream(es).cols}"
-    assert MtxStream(es).num_edges_written < MtxStream(es).entries, &"wrote more edges {MtxStream(es).num_edges_written} than expected {MtxStream(es).entries}"
-    es.stream.writeLine($src & "\t" & $dst & "\t" & $weight)
-    MtxStream(es).num_edges_written += 1
+    assert src <= s.rows
+    assert dst <= s.cols, &"edge with col {dst} is outside matrix {s.cols}"
+    assert s.num_edges_written < s.entries, &"wrote more edges {s.num_edges_written} than expected {s.entries}"
+    s.stream.writeLine($src & "\t" & $dst & "\t" & $weight)
+    s.num_edges_written += 1
 
 proc newMtxStream(stream: Stream): MtxStream =
     new(result)
     result.stream = stream
-    result.readEdgeImpl = msReadEdge
-    result.writeEdgeImpl = msWriteEdge
+
 
 proc newMtxWriter *(stream: Stream, rows, cols, entries: int): MtxStream =
     result = newMtxStream(stream)
@@ -74,6 +73,7 @@ proc newMtxWriter *(stream: Stream, rows, cols, entries: int): MtxStream =
 proc newMtxReader *(stream: Stream): MtxStream =
     result = newMtxStream(stream)
     for line in result.stream.lines():
+        debug(&"current line again: {line}")
         # skip comment lines
         if line.startsWith("%"):
             debug("skip comment line: ", line)

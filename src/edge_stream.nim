@@ -3,33 +3,25 @@ import streams
 import edge
 
 type
-    EdgeStream* = ref EdgeStreamObj
-    EdgeStreamObj* = object of RootObj
+    EdgeStream* = ref object of RootObj
         stream*: Stream
-        readEdgeImpl*: proc (s: EdgeStream, edge: var Edge): bool
-        writeEdgeImpl*: proc (s: EdgeStream, edge: Edge)
 
+method readEdge* (s: EdgeStream, edge: var Edge): bool {.base.} = 
+    quit "to be overridden"
 
-proc readEdge *(s: EdgeStream, edge: var Edge): bool =
-    return s.readEdgeImpl(s, edge)
+method writeEdge* (s: EdgeStream, edge: Edge) {.base.}=
+    quit "to be overridden"
 
-proc writeEdge *(s: EdgeStream, edge: Edge) =
-    s.writeEdgeImpl(s, edge)
-
-proc setPosition*(s: EdgeStream, pos: int) =
-    s.stream.setPosition(pos)
-
-proc getPosition*(s: EdgeStream): int =
-    result = s.stream.getPosition()
-
-proc atEnd*(s: EdgeStream): bool =
+method atEnd* (s: EdgeStream): bool {.base.} = 
     result = s.stream.atEnd()
 
-proc close*(s: EdgeStream) =
-    s.stream.close()
+method getPosition* (s: EdgeStream): int {.base.} = 
+    result = s.stream.getPosition() 
+
+method setPosition* (s: EdgeStream, pos: int) {.base.} = 
+    s.stream.setPosition(pos) 
 
 iterator edges*(s: EdgeStream): Edge =
     var edge: Edge
     while s.readEdge(edge):
         yield edge
-
