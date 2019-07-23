@@ -11,8 +11,8 @@ method readEdge *(s: TsvStream, edge: var Edge): bool =
     result = s.stream.readLine(s.line)
     if result:
         let fields: seq[string] = s.line.splitWhitespace()
-        edge.src = parseInt fields[0]
-        edge.dst = parseInt fields[1]
+        edge.src = parseInt fields[1]
+        edge.dst = parseInt fields[0]
         edge.weight = parseFloat fields[2]
 
 method writeEdge *(s: TsvStream, edge: Edge) =
