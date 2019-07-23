@@ -40,7 +40,7 @@ method writeEdge(s: BmtxStream, edge: Edge) =
         weight = edge.weight
     debug(&"writing edge {edge} -> src:{src} dst:{dst} weight:{weight}")
     assert src <= s.rows, &"src {src} should be less than rows {s.rows}"
-    assert dst <= s.cols
+    assert dst <= s.cols, &"src {dst} should be less than cols {s.cols}"
     assert s.entries_written < s.entries
     s.stream.write((int64(src), int64(dst), float64(weight)))
     s.entries_written += 1
@@ -61,7 +61,7 @@ proc newBmtxWriter *(stream: Stream, rows, cols, entries: int): BmtxStream =
     result.writeHeader()
     result.entries_written = 0
 
-proc openBmtxWriter *(path: string, rows, cols, entries: int): BmtxStream = 
+proc openBmtxWriter *(path: string, rows, cols, entries: int): BmtxStream =
     var stream = newFileStream(path, fmWrite)
     result = newBmtxWriter(stream, rows, cols, entries)
 
@@ -76,7 +76,7 @@ proc newBmtxReader *(stream: Stream): BmtxStream =
 
     debug(&"read bmtx header: {result.rows} rows {result.cols} cols {result.entries} entries")
 
-proc openBmtxReader *(path: string): BmtxStream = 
+proc openBmtxReader *(path: string): BmtxStream =
     var stream = newFileStream(path, fmRead)
     result = newBmtxReader(stream)
 
