@@ -2,8 +2,6 @@
 
 Manage a variety of graph datasets
 
-
-
 ## Features
 
 * Conversion between multiple formats
