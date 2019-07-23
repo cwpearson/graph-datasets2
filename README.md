@@ -1,5 +1,9 @@
 # graph-datasets2
 
+master: [![Build Status](https://travis-ci.org/cwpearson/graph-datasets2.svg?branch=master)](https://travis-ci.org/cwpearson/graph-datasets2)
+
+develop: [![Build Status](https://travis-ci.org/cwpearson/graph-datasets2.svg?branch=develop)](https://travis-ci.org/cwpearson/graph-datasets2)
+
 Manage a variety of graph datasets
 
 ## Features
