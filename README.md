@@ -47,16 +47,16 @@ nimble build -d:release
       - [ ] filter by source (`--source graphchallenge`)
       - [ ] filter name by regex (`--re "graph500*"`)
     - [ ] `--continue` flag to resume a download
+- [ ] provide binaries
+  - [ ] linux / amd64
+  - [ ] linx / ppc64le
+  - [ ] macOS / amd64
+  - [ ] windows / amd64
 
 ## Not yet started
-
 - [ ] Visualization of datasets
 - [ ] Verification of datsets
 - [ ] partitioning datasets
-- [ ] provide binaries
-  - [ ] linux / amd64
-  - [ ] maxOS / amd64
-  - [ ] windows / amd64
-  - [ ] ppc64le / amd64
+
 
 *Copyright Carl Pearson 2019*
