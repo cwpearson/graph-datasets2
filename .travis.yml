@@ -61,12 +61,9 @@ script:
   - sh ci/test.sh
   - sh ci/build.sh
 
-after_script:
-  - ls
-  - sh ci/after_script.sh
-  - ls deploy
-
 before_deploy:
+  - ls
+  - sh ci/before_deploy.sh
   - ls deploy
 
 deploy:
