@@ -38,7 +38,11 @@ nimble build -d:release
     - [x] direct version
   - [x] matrix-market coordinate real
     - [x] binary version
-
+- [x] provide binaries
+  - [x] linux / amd64
+  - [x] linux / ppc64le
+  - [x] macOS / amd64
+  - [x] windows / amd64
 ## In Progress
 
 - [ ] Download of datasets
@@ -49,11 +53,6 @@ nimble build -d:release
       - [ ] filter by source (`--source graphchallenge`)
       - [ ] filter name by regex (`--re "graph500*"`)
     - [ ] `--continue` flag to resume a download
-- [ ] provide binaries
-  - [x] linux / amd64
-  - [x] linux / ppc64le
-  - [x] macOS / amd64
-  - [ ] windows / amd64
 
 ## Not yet started
 - [ ] Visualization of datasets
