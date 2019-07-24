@@ -6,6 +6,8 @@ develop: [![Build Status](https://travis-ci.org/cwpearson/graph-datasets2.svg?br
 
 Manage a variety of graph datasets
 
+Visit [releases](https://github.com/cwpearson/graph-datasets2/releases) to download the latest version for linux (amd64/ppc64le) and macOS (amd64).
+
 ## Features
 
 * Conversion between multiple formats
@@ -48,9 +50,9 @@ nimble build -d:release
       - [ ] filter name by regex (`--re "graph500*"`)
     - [ ] `--continue` flag to resume a download
 - [ ] provide binaries
-  - [ ] linux / amd64
-  - [ ] linx / ppc64le
-  - [ ] macOS / amd64
+  - [x] linux / amd64
+  - [x] linux / ppc64le
+  - [x] macOS / amd64
   - [ ] windows / amd64
 
 ## Not yet started

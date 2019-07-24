@@ -35,6 +35,14 @@ matrix:
             - gcc-powerpc64le-linux-gnu
             - libc6-dev-ppc64el-cross
 
+    - os: linux
+      env: CHANNEL=stable CROSS_OS=windows
+      compiler: gcc
+      addons: # This will only be executed on Linux
+        apt:
+          packages:
+            - mingw-w64
+
     # On OSX we only test against clang (gcc is mapped to clang by default)
     - os: osx
       env: CHANNEL=stable
