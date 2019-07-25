@@ -6,7 +6,7 @@ develop: [![Build Status](https://travis-ci.org/cwpearson/graph-datasets2.svg?br
 
 Manage a variety of graph datasets
 
-Visit [releases](https://github.com/cwpearson/graph-datasets2/releases) to download the latest version for linux (amd64/ppc64le) and macOS (amd64).
+Download [the latest release](https://github.com/cwpearson/graph-datasets2/releases/latest) for your platform.
 
 ## Features
 
