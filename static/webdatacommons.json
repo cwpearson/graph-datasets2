@@ -1,0 +1,22 @@
+{
+    "webdatacommons": {
+        "datasets": [
+            {
+                "name": "pagegraph",
+                "resources": [
+                    {
+                        "name": "index-list",
+                        "url": "http://webdatacommons.org/hyperlinkgraph/2014-04/data/index.list.txt",
+                        "desc": "a list of index files to download"
+                    },
+                    {
+                        "name": "arc-list",
+                        "url": "http://webdatacommons.org/hyperlinkgraph/2014-04/data/index.list.txt",
+                        "desc": "a list of arc files to download"
+                    }
+                ]
+            }
+        ],
+        "citation": ""
+    }
+}
