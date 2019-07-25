@@ -59,5 +59,12 @@ nimble build -d:release
 - [ ] Verification of datsets
 - [ ] partitioning datasets
 
+## Making a Release
+
+1. Increment the package version in `graph_datasets2.nimble`.
+2. Commit that change
+3. Create a matching git tag
+4. Push that tag
+5. Go onto github and make the draft release a real release
 
 *Copyright Carl Pearson 2019*
