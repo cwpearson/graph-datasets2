@@ -8,6 +8,7 @@ proc version() =
     echo "version: ", GdVerStr
     echo "sha:     ", GdGitSha
     echo "author:  ", GdAuthor
+    echo "url:     ", GdUrl
 
 
 proc doVersion *[T](opts: T): int {.discardable.} =

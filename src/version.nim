@@ -10,3 +10,4 @@ const
     GdGitSha* : string = staticExec("git rev-parse HEAD")
     GdVerStr* : string = staticExec("git describe --tags HEAD")
     GdAuthor* : string = staticRead("../graph_datasets2.nimble").author()
+    GdUrl* : string = "https://github.com/cwpearson/graph-datasets2"
