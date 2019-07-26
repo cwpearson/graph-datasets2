@@ -54,8 +54,8 @@ nimble build -d:release
     - [ ] listing / filtering datasets
       - [x] preliminary filtering by name
       - [ ] filter by source (`--source graphchallenge`)
-      - [ ] filter name by regex (`--re "graph500*"`)
-      - [ ] filter by format
+      - [ ] filter by name (`--name "graph500*"`)
+      - [ ] filter by format (`--format mtx`)
     - [ ] `--continue` flag to resume a download
 
 ## Not yet started
