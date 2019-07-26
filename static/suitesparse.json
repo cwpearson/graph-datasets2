@@ -1,0 +1,11 @@
+{
+    "suitesparse": {
+        "datasets": [
+            {
+                "name": "raefsky1",
+                "url": "https://sparse.tamu.edu/MM/Simon/raefsky1.tar.gz",
+                "size": 3061220
+            }
+        ]
+    }
+}
