@@ -47,3 +47,17 @@ proc download(search_name: string): int {.discardable.} =
 
 proc doDownload *[T](opts: T): int {.discardable.} =
     download(opts.name)
+
+import ../datasets
+
+proc download2 *(name: string = "", format: string = "", dataset: string = "",
+        size: int = 0, output: string, force: bool = false) =
+    ## download one or more datasets
+    ## filter by provider name, dataset name, dataset format, and size
+    ## if the name or provider matches exactly, keep only those, otherwise, treat it as a regex
+    ## if force,
+
+    for provider in allProviders:
+        discard
+
+    discard

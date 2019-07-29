@@ -1,47 +1,45 @@
 {
-    "sparsechallenge2019": {
-        "datasets": [
-            {
-                "name": "neuron1024",
-                "url": "https://graphchallenge.s3.amazonaws.com/synthetic/sparsechallenge_2019/dnn/neuron1024.tar.gz",
-                "size": 176880749
-            },
-            {
-                "url": "https://graphchallenge.s3.amazonaws.com/synthetic/sparsechallenge_2019/dnn/neuron4096.tar.gz",
-                "name": "neuron4096",
-                "size": 799756626
-            },
-            {
-                "url": "https://graphchallenge.s3.amazonaws.com/synthetic/sparsechallenge_2019/dnn/neuron16384.tar.gz",
-                "name": "neuron16384",
-                "size": 3605640924
-            },
-            {
-                "url": "https://graphchallenge.s3.amazonaws.com/synthetic/sparsechallenge_2019/dnn/neuron65536.tar.gz",
-                "name": "neuron65536",
-                "size": 15882663547
-            },
-            {
-                "name": "sparse-images-1024",
-                "url": "https://graphchallenge.s3.amazonaws.com/synthetic/sparsechallenge_2019/mnist/sparse-images-1024.tsv.gz",
-                "size": 16445890
-            },
-            {
-                "name": "sparse-images-4096",
-                "url": "https://graphchallenge.s3.amazonaws.com/synthetic/sparsechallenge_2019/mnist/sparse-images-4096.tsv.gz",
-                "size": 63636564
-            },
-            {
-                "name": "sparse-images-16384",
-                "url": "https://graphchallenge.s3.amazonaws.com/synthetic/sparsechallenge_2019/mnist/sparse-images-16384.tsv.gz",
-                "size": 253015923
-            },
-            {
-                "name": "sparse-images-65536",
-                "url": "https://graphchallenge.s3.amazonaws.com/synthetic/sparsechallenge_2019/mnist/sparse-images-65536.tsv.gz",
-                "size": 1024820347
-            }
-        ],
-        "citation": ""
-    }
+    "datasets": [
+        {
+            "name": "neuron1024",
+            "size": 176880749,
+            "url": "https://graphchallenge.s3.amazonaws.com/synthetic/sparsechallenge_2019/dnn/neuron1024.tar.gz"
+        },
+        {
+            "name": "neuron4096",
+            "size": 799756626,
+            "url": "https://graphchallenge.s3.amazonaws.com/synthetic/sparsechallenge_2019/dnn/neuron4096.tar.gz"
+        },
+        {
+            "url": "https://graphchallenge.s3.amazonaws.com/synthetic/sparsechallenge_2019/dnn/neuron16384.tar.gz",
+            "name": "neuron16384",
+            "size": 3605640924
+        },
+        {
+            "url": "https://graphchallenge.s3.amazonaws.com/synthetic/sparsechallenge_2019/dnn/neuron65536.tar.gz",
+            "name": "neuron65536",
+            "size": 15882663547
+        },
+        {
+            "name": "sparse-images-1024",
+            "url": "https://graphchallenge.s3.amazonaws.com/synthetic/sparsechallenge_2019/mnist/sparse-images-1024.tsv.gz",
+            "size": 16445890
+        },
+        {
+            "name": "sparse-images-4096",
+            "url": "https://graphchallenge.s3.amazonaws.com/synthetic/sparsechallenge_2019/mnist/sparse-images-4096.tsv.gz",
+            "size": 63636564
+        },
+        {
+            "name": "sparse-images-16384",
+            "url": "https://graphchallenge.s3.amazonaws.com/synthetic/sparsechallenge_2019/mnist/sparse-images-16384.tsv.gz",
+            "size": 253015923
+        },
+        {
+            "name": "sparse-images-65536",
+            "url": "https://graphchallenge.s3.amazonaws.com/synthetic/sparsechallenge_2019/mnist/sparse-images-65536.tsv.gz",
+            "size": 1024820347
+        }
+    ],
+    "bibtex": ""
 }

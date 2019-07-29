@@ -9,6 +9,7 @@ import cmds/cacherows
 import cmds/convert
 import cmds/count
 import cmds/download
+import cmds/list
 import cmds/orient
 import cmds/relabel
 import cmds/version
@@ -39,6 +40,11 @@ var p = newParser("grpah_datasets"):
     arg("name")
     run:
       doDownload(opts)
+  command("list"):
+    flag("--full")
+    option("--name")
+    run:
+      doList(opts)
   command("orient"):
     arg("input")
     arg("output")
