@@ -41,5 +41,5 @@
             "size": 1024820347
         }
     ],
-    "bibtex": ""
+    "bibtex": "@article{kepnersparse,\ntitle={Sparse Deep Neural Network Graph Challenge},\nauthor={Kepner, Jeremy and Alford, Simon and Gadepally, Vijay and Jones, Michael and Milechin, Lauren and Robinett, Ryan and Samsi, Sid}\n}"
 }
