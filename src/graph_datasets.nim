@@ -38,11 +38,14 @@ var p = newParser("grpah_datasets"):
       doCount(opts)
   command("download"):
     arg("name")
+    arg("output")
     run:
       doDownload(opts)
   command("list"):
     flag("--full")
     option("--name")
+    option("--provider")
+    option("--format")
     run:
       doList(opts)
   command("orient"):
