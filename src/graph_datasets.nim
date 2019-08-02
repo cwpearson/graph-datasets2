@@ -14,7 +14,7 @@ import cmds/orient
 import cmds/relabel
 import cmds/version
 
-var p = newParser("grpah_datasets"):
+var p = newParser("graph_datasets"):
   flag("--debug")
   flag("--verbose")
   run:
@@ -37,7 +37,8 @@ var p = newParser("grpah_datasets"):
     run:
       doCount(opts)
   command("download"):
-    arg("name")
+    flag("--force")
+    arg("dataset", help = "name of dataset to download")
     arg("output")
     run:
       doDownload(opts)
