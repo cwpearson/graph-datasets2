@@ -13,7 +13,6 @@
             "command": "nimble",
             "args": [
                 "build",
-                "-d:release",
                 "-d:ssl"
             ],
             "options": {
