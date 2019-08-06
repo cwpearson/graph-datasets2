@@ -2,8 +2,15 @@ import json
 import nre
 import strutils
 import logger
+import gzhelper
+import os
+import strformat
+import uri
 
 import nethelper
+import init
+import gzhelper
+import pathhelper
 
 const
     graphChallengeStaticRaw = staticRead("../static/graphchallengestatic.txt")
@@ -12,62 +19,120 @@ const
     suitesparseRaw = staticRead("../static/suitesparse.json")
     webDataCommonsRaw = staticRead("../static/webdatacommons.json")
 
-proc makeJson(): JsonNode =
-    result = newJObject()
-    result{"matrixmarket"} = parseJson(matrixmarketRaw)
-    result{"sparsechallenge2019"} = parseJson(sparseChallenge2019Raw)
-    result{"suitesparse"} = parseJson(suitesparseRaw)
-    result{"webdatacommons"} = parseJson(webDataCommonsRaw)
+type
+    Dataset* = ref object of RootObj
+        description*: string
+        name*: string
+        format*: string
+        reservedDirs*: seq[string]
+        reservedFiles*: seq[string]
+        provider*: string
+        bibtex*: string
+    GraphChallengeStaticDataset* = ref object of Dataset
+        gzName*: string
+        extractName*: string
+        size*: int
+        url*: string
+    SparseChallengeDataset* = ref object of Dataset
+        size*: int
+        url*: string
 
-let allDatasets = makeJson()
+proc newSparseChallengeDataset(): SparseChallengeDataset =
+    new(result)
+
+method verifyDownload*(d: Dataset, dir: string): bool {.base.} =
+  # override this base method
+  quit "to override!"
+
+method download*(d: Dataset, dir: string) {.base.} =
+  # override this base method
+  quit "to override!"
+
+method verify*(d: Dataset, dir: string): bool {.base.} =
+  # override this base method
+  quit "to override!"
+
+method extract*(d: Dataset, dir: string) {.base.} =
+  # override this base method
+  quit "to override!"
+
+method verifyDownload*(d: GraphChallengeStaticDataset, dir: string): bool = 
+    ## verify that the dataset exists in dir 
+    let url = d.url
+    let dlName = getUrlTail(url)
+    let dlPath = dir / dlName
+    if existsFile(dlPath):
+        let url = d.url
+        let localSz = getFileSize(dlPath)
+        debug(&"{dlPath} size is {localSz}")
+        let remoteSz = getUrlSize(url)
+        debug(&"{url} size is {remoteSz}")
+        if localSz != remoteSz:
+            return false
+        else:
+            return true
+    return false
+
+method download*(d: GraphChallengeStaticDataset, dir: string)  =
+    ## download the dataset into directory dir
+    let url = d.url
+    if d.gzName != "":
+        retrieveUrl(url, dir / d.gzName)
+    else:
+        retrieveUrl(url, dir / d.extractName)
+
+method verify*(d: GraphChallengeStaticDataset, dir: string): bool  = 
+    ## verify that dir contains the dataset
+    let gzPath = dir / d.gzName
+    let extractPath = dir / d.extractName
+    if fileExists(gzPath) and fileExists(extractPath):
+        if getFileSize(extractPath) mod (1024 * 1024 * 1024 * 4) == getExtractedSize(gzPath):
+            return true
+    return false
+
+method extract*(d: GraphChallengeStaticDataset, dir: string) =
+    ## extract a previously-downloaded dataset, if necessary
+    if d.gzName != "":
+        notice(&"extracting {dir / d.gzName}")
+        extractGz(dir / d.gzName)
+    else:
+        debug(&"skipping extract (not compressed)")
 
 
+proc initDataset*(): Dataset = 
+    result
 
-type Resource* = object of RootObj
-    description*: string
-    size*: int
-    url*: string
-
-type Dataset* = object of RootObj
-    description*: string
-    name*: string
-    resources*: seq[Resource]
-    format*: string
-    getter*: proc (output: string) {.closure.}
-
-type Provider* = object of RootObj
-    name*: string
-    datasets*: seq[Dataset]
-    bibtex*: string
-
-
-proc initSparseChallenge*(json: JsonNode): Provider =
-    result.name = "SparseChallenge"
+proc initSparseChallenge*(): seq[Dataset] =
+    let json = parseJson(sparseChallenge2019Raw)
+    let bibtex = json{"bibtex"}.getStr()
     for dataset in json["datasets"]:
-        var r: Resource
-        r.url = dataset["url"].getStr()
-        r.size = dataset["size"].getInt()
-
-        var d: Dataset
-        d.resources.add(r)
+        var d = newSparseChallengeDataset()
+        d.provider = "SparseChallenge"
+        d.url = dataset["url"].getStr()
+        d.size = dataset["size"].getInt()
         d.name = dataset["name"].getStr()
-        result.datasets.add(d)
+        d.bibtex = bibtex
+        result.add(d)
 
-    result.bibtex = json{"bibtex"}.getStr()
 
-proc initGraphChallengeStatic*(raw: string): Provider =
-    result.name = "GraphChallengeStatic"
+proc initGraphChallengeStatic*(): seq[Dataset] =
+    let raw = graphChallengeStaticRaw
     for raw_line in raw.splitLines():
         var line = raw_line.strip()
         let url = line
-        let name = line[line.rfind("/")+1 .. ^1]
+        let tail = getUrlTail(url)
+        let name = fullSplitFile(tail).name
+        var gzName, extractName: string
+        if tail.endsWith(".gz"):
+            gzName = tail
+            extractName = pathWithoutGz(tail)
+        else:
+            extractName = tail
         let size = 0
         # determine format
-        let format = if line.endsWith(".mmio"):
+        let format = if line.endsWith(".mmio") or line.endsWith(".mmio.gz"):
             "mtx"
-        elif line.endsWith(".tsv"):
-            "tsv"
-        elif line.endsWith(".tsv.gz"):
+        elif line.endsWith(".tsv") or line.endsWith(".tsv.gz"):
             "tsv"
         else:
             raise newException(ValueError, "couldn't detect format for " & line)
@@ -80,51 +145,37 @@ proc initGraphChallengeStatic*(raw: string): Provider =
         else:
             ""
 
-        proc download(): proc(path: string) =
-            result = proc(path: string) =
-                discard retrieve_url(url, path)
+        # determine reserved files
+        var reservedFiles = @[getUrlTail(url)]
+        if url.endsWith(".gz"):
+            reservedFiles.add(pathWithoutGz(getUrlTail(url)))
 
-
-        proc downloadAndExtract(): proc(s: string) =
-            result = proc(path: string) =
-                discard retrieve_url(url, path)
-                # do something to extract path
-
-            # download strategy
-        let getter = if line.endswith(".gz"):
-            download()
-        else:
-            downloadAndExtract()
-
-        let r = Resource(
+        let d = GraphChallengeStaticDataset(
+            provider: "GraphChallengeStatic",
+            reservedFiles: reservedFiles,
             url: url,
             size: size,
-        )
-        let d = Dataset(
             description: description,
             name: name,
             format: format,
-            resources: @[r],
-            getter: getter,
+            gzName: gzName,
+            extractName: extractName,
         )
-        result.datasets.add(d)
+        result.add(d)
 
 
-var allProviders*: seq[Provider]
+var allDatasets*: seq[Dataset]
 
-allProviders.add(initSparseChallenge(allDatasets["sparsechallenge2019"]))
-allProviders.add(initGraphChallengeStatic(graphChallengeStaticRaw))
+proc initDatasets*() =
+    for d in initSparseChallenge():
+        allDatasets.add(d)
+    for d in initGraphChallengeStatic():
+        allDatasets.add(d)
 
-
-iterator filterAll*(providerFilter: proc(p: Provider): bool,
-        datasetFilter: proc(d: Dataset): bool): (Provider, Dataset) =
-    for provider in allProviders:
-        if not providerFilter(provider):
-            continue
-        for dataset in provider.datasets:
-            if not datasetFilter(dataset):
-                continue
-            yield (provider, dataset)
 
 proc `$`*(d: Dataset): string =
-    d.name
+    result = d.provider
+    result &= "/" & d.name
+    result &= "/" & d.format
+
+atInit(initDatasets)

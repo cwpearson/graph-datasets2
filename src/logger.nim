@@ -1,8 +1,11 @@
 import logging
+import init
 
-var consoleLog = newConsoleLogger(useStdErr = true)
+var consoleLog: Logger
 
-addHandler(consoleLog)
+proc initLogging*() =
+    consoleLog = newConsoleLogger(useStdErr = true)
+    addHandler(consoleLog)
 
 proc setLevel *(lvl: Level) =
     consoleLog.levelThreshold = lvl
@@ -24,3 +27,5 @@ template error*(args: varargs[string, `$`]) =
     logging.error(args)
 
 export Level
+
+beforeInit(initLogging)

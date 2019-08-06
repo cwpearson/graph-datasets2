@@ -3,8 +3,8 @@
 import argparse
 import os
 import logger
-import logging
 
+import init
 import cmds/cacherows
 import cmds/convert
 import cmds/count
@@ -38,8 +38,9 @@ var p = newParser("graph_datasets"):
       doCount(opts)
   command("download"):
     flag("--force")
+    flag("--dry-run")
+    option("output", help = "output directory", default = ".")
     arg("dataset", help = "name of dataset to download")
-    arg("output")
     run:
       doDownload(opts)
   command("list"):
@@ -47,6 +48,7 @@ var p = newParser("graph_datasets"):
     option("--name")
     option("--provider")
     option("--format")
+
     run:
       doList(opts)
   command("orient"):
@@ -66,6 +68,7 @@ var p = newParser("graph_datasets"):
 
 
 when isMainModule:
+  init()
   try:
     p.run()
   except UsageError:
