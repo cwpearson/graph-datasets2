@@ -12,3 +12,4 @@ bin           = @["graph_datasets", "tc"]
 
 requires "nim >= 0.20.0"
 requires "argparse"
+requires "zip"
