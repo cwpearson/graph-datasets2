@@ -4,10 +4,32 @@ import os
 import strformat
 import asyncdispatch
 import asyncfile
+import tables
+import strutils
+import strformat
+import uri
 
 import logger
 
-proc retrieve_url *(url: string, path: string, retries: int = 3): bool =
+proc getUrlTail*(url:string): string =
+    var uri = initUri()
+    parseUri(url, uri)
+    let splittedPath = splitPath(uri.path)
+    result = splittedPath.tail
+
+proc getUrlSize *(url: string): int =
+    ## get the size of a URL, or -1 if unable
+    debug(&"request remote size for {url}")
+    let client = newHttpClient()
+    let response = client.request(url)
+    debug(&"got {response.headers.table}")
+    if "content-length" in response.headers.table:
+        let rawLength = response.headers.table["content-length"][0]
+        result = parseInt(rawLength)
+    else:
+        result = -1
+
+proc retrieveUrl *(url: string, path: string, retries: int = 3) =
 
     var client: AsyncHttpClient = newAsyncHttpClient()
     defer: client.close()
@@ -43,7 +65,7 @@ proc retrieve_url *(url: string, path: string, retries: int = 3): bool =
                     sleep(1000)
                     continue
 
-            debug("await writeFromtStream")
+            debug("await writeFromStream")
             await file.writeFromStream(response.bodyStream)
             break
 
@@ -56,6 +78,4 @@ proc retrieve_url *(url: string, path: string, retries: int = 3): bool =
         res.fail(exc)
         raise
     waitFor res
-
-    return true
 
