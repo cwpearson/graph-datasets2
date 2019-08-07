@@ -43,21 +43,26 @@ nimble build -d:release
   - [x] linux / ppc64le
   - [x] macOS / amd64
   - [x] windows / amd64
+
 ## In Progress
 
 - [ ] Download of datasets
-    - [x] Twitter (`http://an.kaist.ac.kr/traces/WWW2010.html`)
+    - [x] [Twitter](http://an.kaist.ac.kr/traces/WWW2010.html)
     - [x] a few graph challenge datasets 
+    - [ ] [Matrix Market](https://math.nist.gov/MatrixMarket/browse.html)
+    - [ ] [SuiteSparse](https://sparse.tamu.edu/)
     - [ ] listing / filtering datasets
       - [x] preliminary filtering by name
       - [ ] filter by source (`--source graphchallenge`)
-      - [ ] filter name by regex (`--re "graph500*"`)
+      - [ ] filter by name (`--name "graph500*"`)
+      - [ ] filter by format (`--format mtx`)
     - [ ] `--continue` flag to resume a download
 
 ## Not yet started
 - [ ] Visualization of datasets
 - [ ] Verification of datsets
 - [ ] partitioning datasets
+- [ ] file support: matrix-market coordinate data types and symmetries (required for Matrix Market and SuiteSparse)
 
 ## Making a Release
 
