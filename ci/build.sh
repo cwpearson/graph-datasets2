@@ -9,4 +9,5 @@ elif [ -n "${CROSS_OS+x}" ]; then
     fi
 else
     nimble build -d:release
+    ./graph_datasets version
 fi
