@@ -20,11 +20,8 @@ proc download *(dataset, output: string, force: bool = false,
             error(&"directory {output} does not exist")
             quit(1)
 
-    proc matchName(d: Dataset): bool =
-        return ($d).contains(re(dataset))
-
     var remaining: seq[Dataset]
-    remaining = filter(allDatasets, matchName)
+    remaining = filter(allDatasets, nameRegexMatcher(dataset))
 
 
     for dataset in remaining:

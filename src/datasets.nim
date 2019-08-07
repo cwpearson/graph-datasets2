@@ -41,23 +41,23 @@ proc newSparseChallengeDataset(): SparseChallengeDataset =
     new(result)
 
 method verifyDownload*(d: Dataset, dir: string): bool {.base.} =
-  # override this base method
-  quit "to override!"
+    # override this base method
+    quit "to override!"
 
 method download*(d: Dataset, dir: string) {.base.} =
-  # override this base method
-  quit "to override!"
+    # override this base method
+    quit "to override!"
 
 method verify*(d: Dataset, dir: string): bool {.base.} =
-  # override this base method
-  quit "to override!"
+    # override this base method
+    quit "to override!"
 
 method extract*(d: Dataset, dir: string) {.base.} =
-  # override this base method
-  quit "to override!"
+    # override this base method
+    quit "to override!"
 
-method verifyDownload*(d: GraphChallengeStaticDataset, dir: string): bool = 
-    ## verify that the dataset exists in dir 
+method verifyDownload*(d: GraphChallengeStaticDataset, dir: string): bool =
+    ## verify that the dataset exists in dir
     let url = d.url
     let dlName = getUrlTail(url)
     let dlPath = dir / dlName
@@ -73,7 +73,7 @@ method verifyDownload*(d: GraphChallengeStaticDataset, dir: string): bool =
             return true
     return false
 
-method download*(d: GraphChallengeStaticDataset, dir: string)  =
+method download*(d: GraphChallengeStaticDataset, dir: string) =
     ## download the dataset into directory dir
     let url = d.url
     if d.gzName != "":
@@ -81,12 +81,13 @@ method download*(d: GraphChallengeStaticDataset, dir: string)  =
     else:
         retrieveUrl(url, dir / d.extractName)
 
-method verify*(d: GraphChallengeStaticDataset, dir: string): bool  = 
+method verify*(d: GraphChallengeStaticDataset, dir: string): bool =
     ## verify that dir contains the dataset
     let gzPath = dir / d.gzName
     let extractPath = dir / d.extractName
     if fileExists(gzPath) and fileExists(extractPath):
-        if getFileSize(extractPath) mod (1024 * 1024 * 1024 * 4) == getExtractedSize(gzPath):
+        if getFileSize(extractPath) mod (1024 * 1024 * 1024 * 4) ==
+                getExtractedSize(gzPath):
             return true
     return false
 
@@ -99,7 +100,8 @@ method extract*(d: GraphChallengeStaticDataset, dir: string) =
         debug(&"skipping extract (not compressed)")
 
 
-proc initDataset*(): Dataset = 
+
+proc initDataset*(): Dataset =
     result
 
 proc initSparseChallenge*(): seq[Dataset] =
@@ -177,5 +179,17 @@ proc `$`*(d: Dataset): string =
     result = d.provider
     result &= "/" & d.name
     result &= "/" & d.format
+
+proc nameRegexMatcher*(regex: string): proc(d: Dataset): bool =
+    result = proc (d: Dataset): bool =
+        return ($d).contains(re(regex))
+
+proc providerExactMatcher*(provider: string): proc(d: Dataset): bool =
+    result = proc (d: Dataset): bool =
+        return d.provider == provider
+
+proc formatExactMatcher*(format: string): proc(d: Dataset): bool =
+    result = proc (d: Dataset): bool =
+        return d.format == format
 
 atInit(initDatasets)

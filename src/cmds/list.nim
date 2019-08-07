@@ -1,5 +1,4 @@
 import strformat
-import nre
 import sequtils
 
 import ../datasets
@@ -7,22 +6,16 @@ import ../datasets
 proc list(provider: string = "", name: string = "", format: string = "",
         full: bool = false) =
 
-    proc filterFunc(d: Dataset): bool =
-        result = true
-        if result and name != "":
-            let regex = re(name)
-            result = result and ($d).contains(regex)
-        if result and format != "":
-            result = result and (d.format == format)
-
-    var remaining: seq[Dataset]
-
-    remaining = filter(allDatasets, filterFunc)
+    var remaining = allDatasets
+    if name != "":
+        remaining = filter(remaining, nameRegexMatcher(name))
+    if format != "":
+        remaining = filter(remaining, formatExactMatcher(format))
+    if provider != "":
+        remaining = filter(remaining, providerExactMatcher(provider))
 
     for dataset in remaining:
-        let name = dataset.name
         let desc = dataset.description
-        let format = dataset.format
         if full:
             echo &"{dataset}\t{desc}"
         else:
