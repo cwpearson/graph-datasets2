@@ -11,7 +11,7 @@ proc list(provider: string = "", name: string = "", format: string = "",
         result = true
         if result and name != "":
             let regex = re(name)
-            result = result and d.name.contains(regex)
+            result = result and ($d).contains(regex)
         if result and format != "":
             result = result and (d.format == format)
 
