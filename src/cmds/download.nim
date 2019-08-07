@@ -1,49 +1,56 @@
 import strutils
+import nre
+import strformat
+import os
+import sequtils
 
 import ../logger
 import ../nethelper
-
-var sources = @[
-        ("graphchallenge/amazon0302", "https://graphchallenge.s3.amazonaws.com/snap/amazon0302/amazon0302_adj.tsv",
-                ""),
-        ("graphchallenge/amazon0312", "https://graphchallenge.s3.amazonaws.com/snap/amazon0312/amazon0312_adj.tsv",
-                ""),
-        ("graphchallenge/soc-Epinions", "https://graphchallenge.s3.amazonaws.com/snap/soc-Epinions1/soc-Epinions1_adj.tsv",
-                ""),
-        ("twitter/twitter_rv", "http://an.kaist.ac.kr/~haewoon/release/twitter_social_graph/twitter_rv.zip",
-                ""),
-    ]
+import ../datasets
 
 
-proc fuzzy_match(a, b: string): int =
-    let
-        la = toLowerAscii(a)
-        lb = toLowerAscii(b)
-    return strutils.editDistance(la, lb)
+proc download *(dataset, output: string, force: bool = false,
+        dryRun: bool = false) =
+    ## download one or more datasets
 
-proc download(search_name: string): int {.discardable.} =
-    var min_dist = high(int)
-    var min_idx = len(sources)
-    for i, (name, url, hash) in sources:
-        let d = fuzzy_match(name, search_name)
-        echo d, " ", name
-        if d < min_dist:
-            min_dist = d
-            min_idx = i
-    if min_dist == 0:
-        let (name, url, _) = sources[min_idx]
-        echo "matched ", name
-        discard retrieve_url(url, "test.bel")
-        return 0
-    else:
-        let (name, _, _) = sources[min_idx]
-        info("did you mean ", name)
-        echo name
-        quit(1)
+    if not existsDir(output):
+        if dryRun:
+            warn(&"would fail: directory {output} does not exist")
+        else:
+            error(&"directory {output} does not exist")
+            quit(1)
+
+    var remaining: seq[Dataset]
+    remaining = filter(allDatasets, nameRegexMatcher(dataset))
 
 
+    for dataset in remaining:
+        # if dataset is already in output, we're done
+        if dryRun:
+            notice(&"would check if {dataset} already exists")
+        else:
+            notice(&"checking {dataset}")
+            if dataset.verify(output):
+                notice(&"{dataset} already exists")
+                return
 
+        if dryRun:
+            notice(&"would download {dataset}")
+        else:
+            if not dataset.verifyDownload(output):
+                notice(&"downloading {dataset}")
+                dataset.download(output)
+
+        if dryRun:
+            notice(&"would extract {dataset}")
+        else:
+            notice(&"extracting {dataset}")
+            dataset.extract(output)
 
 
 proc doDownload *[T](opts: T): int {.discardable.} =
-    download(opts.name)
+    download(dataset = opts.dataset, output = opts.output, force = opts.force,
+            dryRun = opts.dry_run)
+
+
+

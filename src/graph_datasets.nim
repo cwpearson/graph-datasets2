@@ -3,17 +3,18 @@
 import argparse
 import os
 import logger
-import logging
 
+import init
 import cmds/cacherows
 import cmds/convert
 import cmds/count
 import cmds/download
+import cmds/list
 import cmds/orient
 import cmds/relabel
 import cmds/version
 
-var p = newParser("grpah_datasets"):
+var p = newParser("graph_datasets"):
   flag("--debug")
   flag("--verbose")
   run:
@@ -36,9 +37,20 @@ var p = newParser("grpah_datasets"):
     run:
       doCount(opts)
   command("download"):
-    arg("name")
+    flag("--force")
+    flag("--dry-run")
+    option("output", help = "output directory", default = ".")
+    arg("dataset", help = "name of dataset to download")
     run:
       doDownload(opts)
+  command("list"):
+    flag("--full")
+    option("--name")
+    option("--provider")
+    option("--format")
+
+    run:
+      doList(opts)
   command("orient"):
     arg("input")
     arg("output")
@@ -56,6 +68,7 @@ var p = newParser("grpah_datasets"):
 
 
 when isMainModule:
+  init()
   try:
     p.run()
   except UsageError:

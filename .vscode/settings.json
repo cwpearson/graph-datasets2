@@ -1,5 +1,6 @@
 {
     "nim.buildOnSave": true,
     "nim.lintOnSave": true,
-    "nim.nimsuggestRestartTimeout": 3
+    "nim.nimsuggestRestartTimeout": 3,
+    "editor.formatOnSave": true
 }

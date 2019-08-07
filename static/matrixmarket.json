@@ -1,0 +1,11 @@
+{
+    "matrixmarket": {
+        "datasets": [
+            {
+                "name": "fs_680_1",
+                "url": "ftp://math.nist.gov/pub/MatrixMarket2/Harwell-Boeing/facsimile/fs_680_1.mtx.gz",
+                "size": 22995
+            }
+        ]
+    }
+}
