@@ -40,6 +40,7 @@ proc orientEdgeStream(inputPath: string, outputPath: string,
             rows += 1 # number of rows instead of largest row
             cols += 1
 
+    info(&"output will have {rows} rows, {cols} cols, {entries} entries")
     if entries == 0:
         warn(&"{outputPath} will have 0 entries")
 
