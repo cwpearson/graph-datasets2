@@ -4,6 +4,7 @@ import sequtils
 import algorithm
 import os
 import algorithm
+import strformat
 
 import ../edge
 import ../bel
@@ -17,34 +18,47 @@ type Orientation* = enum
     oUpperTriangular
     oDegree
 
-proc orientBel(input_path: string, output_path: string,
-        kind: Orientation): int {.discardable.} =
+proc orientEdgeStream(inputPath: string, outputPath: string,
+        kind: Orientation) =
 
-    info("open ", input_path)
-    let bel = openBelStream(input_path, fmRead)
-    defer: bel.close()
-
+    notice(&"orient {inputPath} -> {outputPath}")
+    var srces = guessEdgeStreamReader(inputPath)
 
 
+    # pass 1: count how many edges will be output
+    var
+        rows = 0
+        cols = 0
+        entries = 0
+
+    for _, edge in srces:
+        if edge.src > edge.dst:
+            rows = max(rows, edge.src)
+            cols = max(cols, edge.dst)
+            entries += 1
+        if entries > 0:
+            rows += 1 # number of rows instead of largest row
+            cols += 1
+
+    if entries == 0:
+        warn(&"{outputPath} will have 0 entries")
+
+    # pass 2: write the file
+    var dstes = guessEdgeStreamWriter(outputPath, rows, cols, entries)
     case kind
     of oLowerTriangular:
-        info("open ", output_path)
-        let out_bel = openBelStream(output_path, fmWrite)
-        defer: out_bel.close()
-        for _, edge in bel:
+        for _, edge in srces:
             if edge.src > edge.dst:
-                out_bel.writeEdge(edge)
+                dstes.writeEdge(edge)
     of oUpperTriangular:
-        let out_bel = openBelStream(output_path, fmWrite)
-        defer: out_bel.close()
-        for _, edge in bel:
+        for _, edge in srces:
             if edge.src < edge.dst:
-                out_bel.writeEdge(edge)
+                dstes.writeEdge(edge)
     of oDegree:
         # compute degree of each node
         info("determine vert degrees")
         var degrees = initDict[int, int]()
-        for edge in bel.edges():
+        for edge in srces.edges():
             let d1 = degrees.getOrDefault(edge.src)
             degrees[edge.src] = d1 + 1
             let d2 = degrees.getOrDefault(edge.dst)
@@ -52,7 +66,7 @@ proc orientBel(input_path: string, output_path: string,
 
         info("orient edges by degree")
         var edges: seq[Edge]
-        for edge in bel.edges():
+        for edge in srces.edges():
             if degrees[edge.src] == degrees[edge.dst]:
                 if edge.src < edge.dst:
                     edges.add(edge)
@@ -61,20 +75,20 @@ proc orientBel(input_path: string, output_path: string,
 
         info("write ", len(edges), " edges")
 
-        info("open ", output_path)
-        let out_bel = openBelStream(output_path, fmWrite)
-        defer: out_bel.close()
         for edge in edges:
-            out_bel.writeEdge(edge)
+            dstes.writeEdge(edge)
 
+
+    srces.close()
+    dstes.close()
 
 
 proc orient *(input_path, output_path: string, kind: Orientation): int {.discardable.} =
     let datasetKind = guessFormat(input_path)
 
     case datasetKind
-    of dkBel:
-        orientBel(input_path, output_path, kind)
+    of dkBel, dkMtx, dkTsv, dkBmtx:
+        orientEdgeStream(input_path, output_path, kind)
     else:
         error("can't orient ", input_path, " of kind ", datasetKind)
         quit(1)
