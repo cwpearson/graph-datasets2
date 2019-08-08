@@ -16,7 +16,7 @@ method readEdge *(s: TsvStream, edge: var Edge): bool =
         edge.weight = parseFloat fields[2]
 
 method writeEdge *(s: TsvStream, edge: Edge) =
-    let str = $edge.src & "\t" & $edge.dst & "\t" & $int(edge.weight)
+    let str = $edge.dst & "\t" & $edge.src & "\t" & $int(edge.weight)
     s.stream.writeLine(str)
 
 proc newTsvStream *(stream: Stream): TsvStream =
