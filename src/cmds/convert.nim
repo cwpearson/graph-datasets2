@@ -3,11 +3,12 @@ import system
 import strutils
 import sequtils
 import algorithm
-import tables
+
 import os
 import sets
 import strformat
 
+import ../dict
 import ../edge
 import ../logger
 import ../twitter_dataset
@@ -43,8 +44,7 @@ proc convert (src: string, dst: string): int {.discardable.} =
         var initialSize = sets.rightSize(3_000_000_000)
         var edges = initHashSet[Edge](initialSize)
 
-        initialSize = tables.rightSize(42_000_000)
-        var canonical = initTable[int, int](initialSize)
+        var canonical = initDict[int, int]()
 
         var nextId = 0
 
