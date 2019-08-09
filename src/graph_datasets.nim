@@ -28,6 +28,7 @@ var p = newParser("graph_datasets"):
     run:
       doCacherows(opts)
   command("convert"):
+    flag("--force")
     arg("input")
     arg("output")
     run:

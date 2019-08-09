@@ -22,11 +22,15 @@ import ../graph_challenge
 
 
 
-proc convert (src: string, dst: string): int {.discardable.} =
+proc convert (src: string, dst: string, force: bool): int {.discardable.} =
 
     let
         srcKind = guessFormat(src)
         dstKind = guessFormat(dst)
+
+    if not force and fileExists(dst) or dirExists(dst):
+        error(&"{dst} alread exists")
+        quit(1)
 
     if srcKind == dkUnknown:
         error("unable to determine format for source ", src)
@@ -114,5 +118,5 @@ proc convert (src: string, dst: string): int {.discardable.} =
         error("don't know how to convert ", srcKind, " to ", dstKind)
         quit(1)
 
-proc doConvert *[T](opts: T): int {.discardable.} =
-    convert(opts.input, opts.output)
+proc doConvert *[T](opts: T) =
+    convert(src = opts.input, dst = opts.output, force = opts.force)
