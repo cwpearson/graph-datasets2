@@ -9,7 +9,6 @@ import cmds/cacherows
 import cmds/convert
 import cmds/count
 import cmds/download
-import cmds/list
 import cmds/orient
 import cmds/relabel
 import cmds/version
@@ -38,20 +37,16 @@ var p = newParser("graph_datasets"):
     run:
       doCount(opts)
   command("download"):
-    flag("--force")
-    flag("--dry-run")
-    option("output", help = "output directory", default = ".")
     arg("dataset", help = "name of dataset to download")
+    flag("--dry-run")
+    flag("--force")
+    option("--format")
+    flag("--list", help = "only list results")
+    option("--name")
+    option("output", help = "output directory", default = ".")
+    option("--provider")
     run:
       doDownload(opts)
-  command("list"):
-    flag("--full")
-    option("--name")
-    option("--provider")
-    option("--format")
-
-    run:
-      doList(opts)
   command("orient"):
     arg("input")
     arg("output")
