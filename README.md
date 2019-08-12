@@ -8,11 +8,35 @@ Manage a variety of graph datasets
 
 Download [the latest release](https://github.com/cwpearson/graph-datasets2/releases/latest) for your platform.
 
-## Features
+## Quick Start
 
 * Conversion between multiple formats
 * Resumable downloads (for large datasets)
 * Some statistics on a variety of datasets
+
+## `graph_datasets download`
+
+Download and extract datasets.
+
+* `graph_datasets download --list`: List all datasets.
+* `graph_datasets download --list name`: Show datasets matching regex `name`.
+* `graph_datasets download name --format tsv`: Download datasets matching regex `name` with format `tsv`.
+* `graph_datasets download GraphChallengeStatic/graph500-scale18-ef16_inc/tsv`: Download this specific datasets
+
+
+## `graph_datasets convert`
+
+| format | type | signal | desc |
+|-|-|-|-|
+| GraphChallenge TSV | file | `.tsv` extension | [tsv](https://github.com/cwpearson/graph-datasets2#tsv) |
+| BEL | file | `.bel` extension | [bel](https://github.com/cwpearson/graph-datasets2#bel)
+| Matrix Market Coordinate | file | `.mtx` extension | [nist](https://math.nist.gov/MatrixMarket/formats.html)
+| Binary Matrix Market Coordinate | file | `.bmtx` extension | [bmtx](https://github.com/cwpearson/graph-datasets2#bmtx)
+| Twitter | file | `twitter_rv.zip` | [twitter](https://github.com/cwpearson/graph-datasets2#twitter)
+
+* `graph_datasets convert a.tsv b.bmtx`: convert `a` from GraphChallenge tsv to binary matrix-market format.
+
+
 
 ## Building
 
@@ -33,36 +57,35 @@ nimble build -d:release
   - [x] degree-ordered
 - [x] relabeling of vertex IDs
   - [x] graph compaction from Bisson & Fatica [Update on Static Graph Challenge on GPUs](https://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=8547514) (2018)
-- [x] File formats
+- [x] Convert between file formats
   - [x] graph challenge tab-separated values
-    - [x] direct version
-  - [x] matrix-market coordinate real
     - [x] binary version
+  - [x] matrix-market
+    - [x] binary version of some entries and symmetries
 - [x] provide binaries
   - [x] linux / amd64
   - [x] linux / ppc64le
   - [x] macOS / amd64
   - [x] windows / amd64
+- [x] download datasets
+  - [x] list datasets (`download --list`)
+  - [x] filter by regex (`download "graph500*"`)
+  - [x] filter by source (`download --provider GraphChallenge`)
+  - [x] filter by format (`download --format mtx`)
 
 ## In Progress
 
 - [ ] Download of datasets
     - [x] [Twitter](http://an.kaist.ac.kr/traces/WWW2010.html)
-    - [x] a few graph challenge datasets 
+    - [x] [Static Graph Challenge](https://graphchallenge.mit.edu/data-sets)
+    - [ ] [Sparse Challenge](https://graphchallenge.mit.edu/data-sets)
     - [ ] [Matrix Market](https://math.nist.gov/MatrixMarket/browse.html)
     - [ ] [SuiteSparse](https://sparse.tamu.edu/)
-    - [ ] listing / filtering datasets
-      - [x] preliminary filtering by name
-      - [ ] filter by source (`--source graphchallenge`)
-      - [ ] filter by name (`--name "graph500*"`)
-      - [ ] filter by format (`--format mtx`)
-    - [ ] `--continue` flag to resume a download
 
 ## Not yet started
 - [ ] Visualization of datasets
 - [ ] Verification of datsets
 - [ ] partitioning datasets
-- [ ] file support: matrix-market coordinate data types and symmetries (required for Matrix Market and SuiteSparse)
 
 ## Making a Release
 
@@ -73,3 +96,11 @@ nimble build -d:release
 5. Go onto github and make the draft release a real release
 
 *Copyright Carl Pearson 2019*
+
+## Formats
+
+### TSV
+
+### BEL
+
+### Twitter
