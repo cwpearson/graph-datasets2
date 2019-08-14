@@ -136,7 +136,7 @@ proc initSparseChallenge*(): seq[Dataset] =
     let json = parseJson(sparseChallenge2019Raw)
     let bibtex = json{"bibtex"}.getStr()
     for dataset in json["datasets"]:
-        echo dataset
+        # echo dataset
         var d = newSparseChallengeDataset()
         d.provider = "SparseChallenge"
         d.layers_url = dataset["layers_url"].getStr()

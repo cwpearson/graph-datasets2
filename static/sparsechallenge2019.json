@@ -28,23 +28,23 @@
         },
         {
             "name": "sparse-images-1024",
-            "size": 16445890,
-            "url": "https://graphchallenge.s3.amazonaws.com/synthetic/sparsechallenge_2019/mnist/sparse-images-1024.tsv.gz",
+            "layers_size": 16445890,
+            "layers_url": "https://graphchallenge.s3.amazonaws.com/synthetic/sparsechallenge_2019/mnist/sparse-images-1024.tsv.gz",
         },
         {
             "name": "sparse-images-4096",
-            "url": "https://graphchallenge.s3.amazonaws.com/synthetic/sparsechallenge_2019/mnist/sparse-images-4096.tsv.gz",
-            "size": 63636564
+            "layers_url": "https://graphchallenge.s3.amazonaws.com/synthetic/sparsechallenge_2019/mnist/sparse-images-4096.tsv.gz",
+            "layers_size": 63636564
         },
         {
             "name": "sparse-images-16384",
-            "url": "https://graphchallenge.s3.amazonaws.com/synthetic/sparsechallenge_2019/mnist/sparse-images-16384.tsv.gz",
-            "size": 253015923
+            "layers_url": "https://graphchallenge.s3.amazonaws.com/synthetic/sparsechallenge_2019/mnist/sparse-images-16384.tsv.gz",
+            "layers_size": 253015923
         },
         {
             "name": "sparse-images-65536",
-            "url": "https://graphchallenge.s3.amazonaws.com/synthetic/sparsechallenge_2019/mnist/sparse-images-65536.tsv.gz",
-            "size": 1024820347
+            "layers_url": "https://graphchallenge.s3.amazonaws.com/synthetic/sparsechallenge_2019/mnist/sparse-images-65536.tsv.gz",
+            "layers_size": 1024820347
         }
     ],
     "bibtex": "@article{kepnersparse,\ntitle={Sparse Deep Neural Network Graph Challenge},\nauthor={Kepner, Jeremy and Alford, Simon and Gadepally, Vijay and Jones, Michael and Milechin, Lauren and Robinett, Ryan and Samsi, Sid}\n}"
