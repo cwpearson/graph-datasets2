@@ -11,6 +11,7 @@ import cmds/count
 import cmds/download
 import cmds/orient
 import cmds/relabel
+import cmds/sort
 import cmds/version
 
 var p = newParser("graph_datasets"):
@@ -53,6 +54,12 @@ var p = newParser("graph_datasets"):
     option("-k", "--kind", default = "upper", choices = @["lower", "upper", "degree"])
     run:
       doOrient(opts)
+  command("sort"):
+    arg("input")
+    arg("output")
+    flag("--force")
+    run:
+      doSort(opts)
   command("relabel"):
     arg("input")
     arg("output")

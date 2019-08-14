@@ -22,7 +22,7 @@ import ../graph_challenge
 
 
 
-proc convert (src: string, dst: string, force: bool): int {.discardable.} =
+proc convert*(src: string, dst: string, force: bool): int {.discardable.} =
 
     let
         srcKind = guessFormat(src)

@@ -24,7 +24,6 @@ proc cacherows (path: string): int {.discardable.} =
     of dkBel:
         info("open ", path)
         es = openBelStream(path, fmRead)
-        defer: es.close()
     else:
         error("ERROR can't count for ", path, " of kind ", datasetKind)
         quit(1)
@@ -104,6 +103,9 @@ proc cacherows (path: string): int {.discardable.} =
         else:
             rowMiss += 1
             accessMiss += deg[dst].o
+
+    es.close()
+
     echo "row_hits,", rowHit, ",", float(rowHit) / float(rowHit + rowMiss)
     echo "row_miss,", rowMiss, ",", float(rowMiss) / float(rowHit + rowMiss)
     echo "access_hits,", accessHit, ",", float(accessHit) / float(

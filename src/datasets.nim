@@ -1,12 +1,13 @@
 import json
 import nre
 import strutils
-import logger
-import gzhelper
 import os
 import strformat
 import uri
 
+import untar
+
+import logger
 import nethelper
 import init
 import gzhelper
@@ -34,15 +35,18 @@ type
         size*: int
         url*: string
     SparseChallengeDataset* = ref object of Dataset
-        size*: int
-        url*: string
+        layers_size*: int
+        layers_url*: string
+        cat120_url*: string
+        cat480_url*: string
+        cat1920_url*: string
 
 proc newSparseChallengeDataset(): SparseChallengeDataset =
     new(result)
 
 method verifyDownload*(d: Dataset, dir: string): bool {.base.} =
     # override this base method
-    quit "to override!"
+    false
 
 method download*(d: Dataset, dir: string) {.base.} =
     # override this base method
@@ -50,11 +54,16 @@ method download*(d: Dataset, dir: string) {.base.} =
 
 method verify*(d: Dataset, dir: string): bool {.base.} =
     # override this base method
-    quit "to override!"
+    false
 
 method extract*(d: Dataset, dir: string) {.base.} =
     # override this base method
     quit "to override!"
+
+## Static Graph Challenge methods
+##
+##
+
 
 method verifyDownload*(d: GraphChallengeStaticDataset, dir: string): bool =
     ## verify that the dataset exists in dir
@@ -99,6 +108,25 @@ method extract*(d: GraphChallengeStaticDataset, dir: string) =
     else:
         debug(&"skipping extract (not compressed)")
 
+## Sparse Challenge Methods
+##
+##
+
+method download*(d: SparseChallengeDataset, dir: string) =
+    ## download the dataset into directory dir
+    notice(&"download {d.layers_url}")
+    retrieveUrl(d.layers_url, getUrlTail(d.layers_url))
+    retrieveUrl(d.cat120_url, getUrlTail(d.cat120_url))
+    retrieveUrl(d.cat480_url, getUrlTail(d.cat480_url))
+    retrieveUrl(d.cat1920_url, getUrlTail(d.cat1920_url))
+
+method extract*(d: SparseChallengeDataset, dir: string) =
+    ## extract a previously-downloaded dataset, if necessary
+
+    notice(&"extracting {dir / getUrlTail(d.layers_url)}")
+
+    var file = newTarFile(dir / getUrlTail(d.layers_url))
+    file.extract(dir)
 
 
 proc initDataset*(): Dataset =
@@ -108,10 +136,11 @@ proc initSparseChallenge*(): seq[Dataset] =
     let json = parseJson(sparseChallenge2019Raw)
     let bibtex = json{"bibtex"}.getStr()
     for dataset in json["datasets"]:
+        echo dataset
         var d = newSparseChallengeDataset()
         d.provider = "SparseChallenge"
-        d.url = dataset["url"].getStr()
-        d.size = dataset["size"].getInt()
+        d.layers_url = dataset["layers_url"].getStr()
+        d.layers_size = dataset["layers_size"].getInt()
         d.name = dataset["name"].getStr()
         d.bibtex = bibtex
         result.add(d)

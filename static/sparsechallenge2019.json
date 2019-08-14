@@ -2,28 +2,34 @@
     "datasets": [
         {
             "name": "neuron1024",
-            "size": 176880749,
-            "url": "https://graphchallenge.s3.amazonaws.com/synthetic/sparsechallenge_2019/dnn/neuron1024.tar.gz"
+            "layers_url": "https://graphchallenge.s3.amazonaws.com/synthetic/sparsechallenge_2019/dnn/neuron1024.tar.gz",
+            "layers_size": 176880749,
+            "cat120_url": "https://graphchallenge.s3.amazonaws.com/synthetic/sparsechallenge_2019/dnn/neuron1024-l120-categories.tsv",
+            "cat120_size": 0,
+            "cat480_url": "https://graphchallenge.s3.amazonaws.com/synthetic/sparsechallenge_2019/dnn/neuron1024-l480-categories.tsv",
+            "cat408_size": 0,
+            "cat1920_url": "https://graphchallenge.s3.amazonaws.com/synthetic/sparsechallenge_2019/dnn/neuron1024-l1920-categories.tsv",
+            "cat1920_size": 0
         },
         {
             "name": "neuron4096",
-            "size": 799756626,
-            "url": "https://graphchallenge.s3.amazonaws.com/synthetic/sparsechallenge_2019/dnn/neuron4096.tar.gz"
+            "layers_size": 799756626,
+            "layers_url": "https://graphchallenge.s3.amazonaws.com/synthetic/sparsechallenge_2019/dnn/neuron4096.tar.gz"
         },
         {
-            "url": "https://graphchallenge.s3.amazonaws.com/synthetic/sparsechallenge_2019/dnn/neuron16384.tar.gz",
             "name": "neuron16384",
-            "size": 3605640924
+            "layers_size": 3605640924,
+            "layers_url": "https://graphchallenge.s3.amazonaws.com/synthetic/sparsechallenge_2019/dnn/neuron16384.tar.gz"
         },
         {
-            "url": "https://graphchallenge.s3.amazonaws.com/synthetic/sparsechallenge_2019/dnn/neuron65536.tar.gz",
             "name": "neuron65536",
-            "size": 15882663547
+            "layers_size": 15882663547,
+            "layers_url": "https://graphchallenge.s3.amazonaws.com/synthetic/sparsechallenge_2019/dnn/neuron65536.tar.gz"
         },
         {
             "name": "sparse-images-1024",
+            "size": 16445890,
             "url": "https://graphchallenge.s3.amazonaws.com/synthetic/sparsechallenge_2019/mnist/sparse-images-1024.tsv.gz",
-            "size": 16445890
         },
         {
             "name": "sparse-images-4096",
