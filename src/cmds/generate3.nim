@@ -104,7 +104,7 @@ proc generate(numNodes, nnz: int64, g: float, output: string, force: bool,
 
     # echo targetNnzPerRow
 
-
+    var os = guessEdgeStreamWriter(output, int(numNodes), int(numNodes), int(nnz))
 
     # start with the largest nodes and create their edges
     notice(&"generate edges")
@@ -125,8 +125,8 @@ proc generate(numNodes, nnz: int64, g: float, output: string, force: bool,
             if actualNnzPerRow[dst] < targetNnzPerRow[dst]:
                 actualNnzPerRow[src] += 1
                 actualNnzPerRow[dst] += 1
-                # echo &"{src} -> {dst}"
-                # echo &"{dst} -> {src}"
+                os.writeEdge(initEdge(int(src), int(dst)))
+                os.writeEdge(initEdge(int(dst), int(src)))
         if actualNnzPerRow[src] < targetNnzPerRow[src]:
             error(&"didn't fill row {src}")
             echo targetNnzPerRow
@@ -141,7 +141,7 @@ proc generate(numNodes, nnz: int64, g: float, output: string, force: bool,
         echo "actual: ", actualNnzPerRow
         quit(1)
 
-    # os.close()
+    os.close()
 
 
 when isMainModule:
@@ -149,9 +149,7 @@ when isMainModule:
     setLevel(lvlDebug)
 
     var seed = 0'i64
-    while true:
-        generate(100_000_000, 300_000_000, 2.5, "test.tsv", true, seed)
-        seed += 1
+    generate(4_000_000_000, 100_000_000_000, 2.5, "test.tsv", true, seed)
 
 
 
