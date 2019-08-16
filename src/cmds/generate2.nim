@@ -7,6 +7,8 @@ import os
 import bitops
 import hashes
 
+import murmur
+
 import ../logger
 import ../init
 import ../format
@@ -16,62 +18,6 @@ import ../edge
 const
     largePrime = 2'u64 ^ 64 - 59
 
-{.push checks: off.}
-proc murmur64A*(bytes: openArray[byte], seed: uint64 = 0): uint64 =
-    ## https://github.com/aappleby/smhasher/blob/master/src/MurmurHash2.cpp
-    let m = 0xc6a4a7935bd1e995'u64
-    let r = 47
-
-    var h = bitxor(seed, uint64(len(bytes)) * m)
-
-    # echo &"h: {h}"
-
-    var i = 0
-
-    # do this 8 bytes at a time
-    while i < (len(bytes) div 8) * 8:
-        var k = cast[ptr uint64](unsafeAddr bytes[i])[]
-        # echo &"i,k: {i},{k}"
-        k *= m
-        k = bitxor(k, k shr r)
-        k *= m
-        h = bitxor(h, k)
-        h *= m
-        i += 8
-    # do this if there are any bytes remaining
-
-    if i < len(bytes): # len = 15, i = 8
-        var u = 0'u64
-        let istart = i
-        while i < len(bytes):
-            let shamt = 8 * (i - istart)
-            # echo &"i/tot, shamt: {i}/{len(bytes)}, {shamt}"
-            u += uint64(bytes[i]) shl shamt
-            i += 1
-        # echo &"u: {u}"
-        h = bitxor(h, u)
-        h *= m
-
-    h = bitxor(h, h shr r)
-    h *= m
-    h = bitxor(h, h shr r)
-
-    result = h
-    # echo &"{bytes},{seed} -> {result}"
-{.pop.}
-
-proc murmur64A*(x: int, seed: uint64 = 0): uint64 =
-    let a = cast[array[sizeof(x), byte]](x)
-    return murmur64A(a, seed)
-
-proc murmur64A*(x: uint64, seed: uint64 = 0): uint64 =
-    let a = cast[array[sizeof(x), byte]](x)
-    return murmur64A(a, seed)
-
-proc murmur64A*(x: uint32, seed: uint64 = 0): uint64 =
-    let a = cast[array[sizeof(x), byte]](x)
-    return murmur64A(a, seed)
-
 
 type Bloom*[T] = object
     data: seq[uint64]
@@ -80,10 +26,10 @@ type Bloom*[T] = object
     p: uint64 # k / m
 
 proc h1[T](b: Bloom[T], x: int): uint64 =
-    result = murmur64A(x)
+    result = MurmurHash64A(x)
 
 proc h2[T](b: Bloom[T], x: int): uint64 =
-    result = murmur64A(x, largePrime)
+    result = MurmurHash64A(x, largePrime)
 
 proc hi[T](b: Bloom[T], x: int, i: int): uint64 =
     # compute the i'th hash of x
