@@ -52,7 +52,7 @@ proc searchForC(N, nnz: int, g: float): float =
             info(&"c unchanged")
             result = c
             break
-        elif abs(c - prevC) / min(prevC, c) < 0.1:
+        elif abs(c - prevC) / min(prevC, c) < 1:
             if check == prevNnz:
                 info(&"nnz unchanged")
                 result = c
@@ -156,7 +156,7 @@ proc generate(numNodes, nnz: int, g: float, output: string, force: bool) =
                 es.writeEdge(initEdge(int(dst), int(src)))
                 nnzsSoFar += 2
                 if (nnzsSoFar mod (1024 * 1024)) == 0:
-                    info(&"generate edge: {nnzsSoFar}/{actualNnz} (row {src}/{numNodes})")
+                    info(&"generate edge: {nnzsSoFar}/{actualNnz} ({float(nnzsSoFar) / float(actualNnz) * 100:>5.2f}%) (row {src}/{numNodes})")
 
         if actualNnzPerRow[src] < targetNnzPerRow[src]:
             error(&"didn't fill row {src}. nnz in output file is incorrect")
@@ -171,7 +171,7 @@ proc doGenerate *[T](opts: T) =
 
 when isMainModule:
     init()
-    setLevel(lvlNotice)
+    setLevel(lvlInfo)
 
     let targetNodes = 1_000_000
     let targetNnz = 8_000_000
