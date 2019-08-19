@@ -9,6 +9,7 @@ import cmds/cacherows
 import cmds/convert
 import cmds/count
 import cmds/download
+import cmds/generate
 import cmds/orient
 import cmds/relabel
 import cmds/sort
@@ -48,6 +49,14 @@ var p = newParser("graph_datasets"):
     option("--provider")
     run:
       doDownload(opts)
+  command("generate"):
+    arg("output")
+    arg("verts")
+    arg("edges")
+    arg("g")
+    flag("--force")
+    run:
+      doGenerate(opts)
   command("orient"):
     arg("input")
     arg("output")

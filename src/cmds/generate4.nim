@@ -4,8 +4,6 @@ import strformat
 import sequtils
 import algorithm
 import os
-import bitops
-import hashes
 
 import ../logger
 import ../init
@@ -13,78 +11,106 @@ import ../format
 import ../edge_stream
 import ../edge
 
+proc power(x0, x1, n: float64): float64 =
+    ## selects a random number from the power-law distribution
+    ## between x0 and x1 with power n
+    ## http://mathworld.wolfram.com/RandomNumber.html
+    let r = rand(0.0..1.0)
+    let u = pow(x1, n+1)
+    let l = pow(x0, n+1)
+    let e = 1'f64/(n+1)
+    # echo "l,u,r = ", l, ",", u, ",", r, ",", e
+    result = pow(l + (u-l)*r, e)
 
-proc getNnz(N: int64, g, c: float): int64 =
-    assert c > 0
-    var cnt: int64 = 0
-    for i in 1 .. N:
-        let raw = c * pow(float(i), -1.0 * g)
-        try:
-            cnt += int64(raw + 0.5) + 1
-        except OverflowError:
-            # this could also be an underflow, but raw should always be positive
-            echo "overflow, return max"
-            return high(int64)
-    return cnt
+proc power(x0, x1: int, n: float64): int =
+    let raw = power(float64(x0), float64(x1) + 1, n)
+    # echo "raw: ", raw
+    result = int(raw)
+    # echo "result: ", result
 
-proc nnzPerRow(N: int, g, c: float): seq[int] =
-    result = newSeq[int](N)
-    for i in 1 .. N:
-        let raw = c * pow(float(i), -1.0 * g)
-        result[i-1] = int(raw + 0.5) + 1
+proc generate(numNodes, nnz: int, g: float, output: string, force: bool,
+        seed: int64 = 0) =
 
-proc searchForC(N, nnz: int64, g: float): float =
+    if fileExists(output) or dirExists(output):
+        if not force:
+            error(&"{output} already exists")
+            quit(1)
 
-    var ub = float(1e100)
-    var lb = float(1e-100)
-    var c = 1e10
-    var prevC = 0.0
-
-    while true:
-        echo &"try {lb:e} {c:e} {ub:e}"
-        let check = getNnz(N, g, c)
-
-        if prevC == c:
-            echo &"c unchanged"
-            echo &"c yielded {check} nnzs"
-            result = c
-            break
-
-
-        if check < nnz:
-            # c is too small
-            lb = c
-            echo "^"
-        elif check > nnz:
-            # c was too big
-            ub = c
-            echo "v"
-        else:
-            echo &"c yielded {check} nnzs"
-            result = c
-            break
-        prevC = c
-        c = pow(ub * lb, 0.5)
+    if seed != 0:
+        info(&"seed: {seed}")
+        randomize(seed)
 
 
 
+    var cumDegrees = newSeq[int](numNodes)
+    let nodes = toSeq(0..<numNodes)
 
+
+    proc update(node: int) =
+        for i in node..<len(cumDegrees):
+            cumDegrees[i] += 1
+
+    var nnzRemaining = nnz
+
+    var os = guessEdgeStreamWriter(output, numNodes, numNodes, nnz)
+
+
+
+    # let initialNodes = (nnz + numNodes - 1) div numNodes
+    # info(&"creating {initialNodes} initial nodes")
+    # for src in 0..<initialNodes:
+    #     for dst in (src+1)..<initialNodes:
+    #         update(src)
+    #         update(dst)
+    #         os.writeEdge(initEdge(src, dst, 1))
+    #         os.writeEdge(initEdge(dst, src, 1))
+    #         nnzRemaining -= 1
+
+    if numNodes > 1:
+        let src = 0
+        let dst = 1
+        update(src)
+        update(dst)
+        os.writeEdge(initEdge(src, dst, 1))
+        os.writeEdge(initEdge(dst, src, 1))
+        nnzRemaining -= 1
+
+    # add more nodes
+    for dst in 2..<numNodes:
+        let nodesRemaining = numNodes - dst
+
+        echo &"node {dst} with {nnzRemaining} nnzs and {nodesRemaining} nodes left"
+
+        # figure out how many edges we should create
+
+        let numEdges = min(int(float(nnzRemaining) / float(nodesRemaining) +
+                0.5), dst)
+        # echo &"generating {numEdges} edges"
+
+        var srcs: seq[int]
+        while len(srcs) < numEdges:
+            let src = sample(nodes, cumDegrees)
+            # echo "try ", src
+            if not (src in srcs):
+                srcs.add(src)
+
+
+        for src in srcs:
+            update(dst)
+            update(src)
+            os.writeEdge(initEdge(src, dst, 1))
+            os.writeEdge(initEdge(dst, src, 1))
+
+
+
+        nnzRemaining -= len(srcs)
+
+        # echo dst, " -> ", srcs
+        # echo cumDegrees
+
+    os.close()
 
 when isMainModule:
     init()
     setLevel(lvlDebug)
-
-    let targetNodes = 1_000_000_000
-    let targetNnz = 8_000_000_000
-    let g = 3.0
-
-    let c = searchForC(targetNodes, targetNnz, g)
-    let r = nnzPerRow(targetNodes, g, c)
-    echo r[0..50], r[^51..^1]
-
-
-
-
-
-
-
+    generate(1_000_000_000, 2_000_000_000, 2.0, "test.tsv", true)
