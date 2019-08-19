@@ -85,3 +85,4 @@ proc guessEdgeStreamWriter *(path: string, rows, cols, entries: int,
     else:
         error(&"couldn't guess format for {path}")
         nil
+
