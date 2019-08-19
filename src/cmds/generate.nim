@@ -42,6 +42,7 @@ proc searchForC(N, nnz: int, g: float): float =
     var lb = float(1e-100)
     var c = 1e10
     var prevC = 0.0
+    var prevNnz = -1
 
     while true:
         info(&"try c = {c:e}")
@@ -51,6 +52,11 @@ proc searchForC(N, nnz: int, g: float): float =
             info(&"c unchanged")
             result = c
             break
+        elif abs(c - prevC) / min(prevC, c) < 0.1:
+            if check == prevNnz:
+                info(&"nnz unchanged")
+                result = c
+                break
 
 
         if check < nnz:
@@ -66,6 +72,7 @@ proc searchForC(N, nnz: int, g: float): float =
             result = c
             break
         prevC = c
+        prevNnz = check
         c = pow(ub * lb, 0.5)
 
 
@@ -73,6 +80,7 @@ proc generate(numNodes, nnz: int, g: float, output: string, force: bool) =
 
     notice(&"generate with g = {g}, {numNodes} nodes and {nnz} non-zeros")
 
+    notice(&"search for c...")
     let c = searchForC(numNodes, nnz, g)
     info(&"c = {c}")
     var targetNnzPerRow = nnzPerRow(numNodes, g, c)
@@ -90,8 +98,7 @@ proc generate(numNodes, nnz: int, g: float, output: string, force: bool) =
                 e -= 1
                 break
         actualNnz -= 1
-    info(&"found a distribution with {actualNnz} edges and {numNodes} nodes with g = {g} (targeting {nnz})")
-
+    notice(&"found a power distribution with {actualNnz} edges (sought {nnz}) and {numNodes} nodes with g = {g} ")
 
     # ensure no node has more nnzs than there are nodes.
     for i, n in enumerate(targetNnzPerRow):
@@ -99,13 +106,12 @@ proc generate(numNodes, nnz: int, g: float, output: string, force: bool) =
             error(&"row {i} has too many nnz {targetNnzPerRow[i]} > {numNodes}. Try reducing g or the requested number of non-zeros")
             quit(1)
 
-
-
     if targetNnzPerRow[0] < targetNnzPerRow[^1]:
         info("reverseing nnz array")
         targetNnzPerRow.reverse()
 
     # no node can connect to more nodes than come after it with nnzs
+    notice(&"tweaking nnzs per row")
     var nnzsSoFar = 0
     for i in countdown(len(targetNnzPerRow)-1, 1):
         if nnzsSoFar == 0:
@@ -123,19 +129,17 @@ proc generate(numNodes, nnz: int, g: float, output: string, force: bool) =
         error(&"first row has too many non-zeros")
         quit(1)
 
-    notice(&"first 10 row lengths: {targetNnzPerRow[0..9]}")
-    notice(&"last 10 row lengths: {targetNnzPerRow[^10..^1]}")
+    info(&"first 10 row lengths: {targetNnzPerRow[0..9]}")
+    info(&"last 10 row lengths: {targetNnzPerRow[^10..^1]}")
 
     # generate edges
-    notice(&"generate edges")
+    notice(&"generate edges...")
     var actualNnzPerRow = newSeq[int](numNodes)
     var es = guessEdgeStreamWriter(output, numNodes, numNodes, actualNnz)
     # start with the largest nodes and create their edges
 
+    nnzsSoFar = 0
     for src, n in enumerate(targetNnzPerRow):
-        if (src mod (1024 * 1024)) == 0:
-            info(&"generate: {src}/{numNodes}")
-
         # echo &"row {src} needs {targetNnzPerRow[src]}"
 
         # connect to higher-id nodes that need an edge
@@ -150,11 +154,12 @@ proc generate(numNodes, nnz: int, g: float, output: string, force: bool) =
                 actualNnzPerRow[dst] += 1
                 es.writeEdge(initEdge(int(src), int(dst)))
                 es.writeEdge(initEdge(int(dst), int(src)))
+                nnzsSoFar += 2
+                if (nnzsSoFar mod (1024 * 1024)) == 0:
+                    info(&"generate edge: {nnzsSoFar}/{actualNnz} (row {src}/{numNodes})")
+
         if actualNnzPerRow[src] < targetNnzPerRow[src]:
-            error(&"didn't fill row {src}")
-            # echo targetNnzPerRow
-            # echo actualNnzPerRow
-            quit(1)
+            error(&"didn't fill row {src}. nnz in output file is incorrect")
 
     es.close()
 
@@ -166,7 +171,7 @@ proc doGenerate *[T](opts: T) =
 
 when isMainModule:
     init()
-    setLevel(lvlDebug)
+    setLevel(lvlNotice)
 
     let targetNodes = 1_000_000
     let targetNnz = 8_000_000
