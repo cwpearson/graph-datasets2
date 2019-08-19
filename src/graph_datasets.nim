@@ -19,7 +19,7 @@ var p = newParser("graph_datasets"):
   flag("--debug")
   flag("--verbose")
   run:
-    setLevel(lvlInfo)
+    setLevel(lvlNotice)
     if opts.debug:
       setLevel(lvlDebug)
     if opts.verbose:
