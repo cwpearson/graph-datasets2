@@ -66,6 +66,7 @@ var p = newParser("graph_datasets"):
   command("sort"):
     arg("input")
     arg("output")
+    option("-k", "--kind", default = "src", choices = @["srcr", "dst"])
     flag("--force")
     run:
       doSort(opts)
