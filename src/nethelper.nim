@@ -11,7 +11,7 @@ import uri
 
 import logger
 
-proc getUrlTail*(url:string): string =
+proc getUrlTail*(url: string): string =
     var uri = initUri()
     parseUri(url, uri)
     let splittedPath = splitPath(uri.path)
@@ -31,6 +31,8 @@ proc getUrlSize *(url: string): int =
 
 proc retrieveUrl *(url: string, path: string, retries: int = 3) =
 
+    info(&"download {url} -> {path}")
+
     var client: AsyncHttpClient = newAsyncHttpClient()
     defer: client.close()
 
@@ -45,6 +47,12 @@ proc retrieveUrl *(url: string, path: string, retries: int = 3) =
             if fileExists(path):
                 let sz = getFileSize(path)
                 debug("partial download, existing file is size ", sz)
+
+                let remoteSz = getUrlSize(url)
+
+                if remoteSz >= 0 and remoteSz == sz:
+                    debug("skipping download, size matches")
+                    break
 
                 headers = newHttpHeaders({
                     "Range": &"bytes={sz}-"
