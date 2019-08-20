@@ -22,7 +22,7 @@ proc getUrlSize *(url: string): int =
     debug(&"request remote size for {url}")
     let client = newHttpClient()
     let response = client.request(url)
-    debug(&"got {response.headers.table}")
+    # debug(&"got {response.headers.table}")
     if "content-length" in response.headers.table:
         let rawLength = response.headers.table["content-length"][0]
         result = parseInt(rawLength)
