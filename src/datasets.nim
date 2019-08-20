@@ -40,6 +40,7 @@ type
         cat120_url*: string
         cat480_url*: string
         cat1920_url*: string
+        inputUrl*: string
 
 proc newSparseChallengeDataset(): SparseChallengeDataset =
     new(result)
@@ -115,18 +116,27 @@ method extract*(d: GraphChallengeStaticDataset, dir: string) =
 method download*(d: SparseChallengeDataset, dir: string) =
     ## download the dataset into directory dir
     notice(&"download {d.layers_url}")
-    retrieveUrl(d.layers_url, getUrlTail(d.layers_url))
-    retrieveUrl(d.cat120_url, getUrlTail(d.cat120_url))
-    retrieveUrl(d.cat480_url, getUrlTail(d.cat480_url))
-    retrieveUrl(d.cat1920_url, getUrlTail(d.cat1920_url))
+    let root = dir / d.name
+    notice(&"create {root}")
+    createDir(root)
+    retrieveUrl(d.layers_url, root / getUrlTail(d.layers_url))
+    retrieveUrl(d.cat120_url, root / getUrlTail(d.cat120_url))
+    retrieveUrl(d.cat480_url, root / getUrlTail(d.cat480_url))
+    retrieveUrl(d.cat1920_url, root / getUrlTail(d.cat1920_url))
+    retrieveUrl(d.inputUrl, root / getUrlTail(d.input_url))
 
 method extract*(d: SparseChallengeDataset, dir: string) =
     ## extract a previously-downloaded dataset, if necessary
+    let root = dir / d.name
+    assert existsDir(root)
 
-    notice(&"extracting {dir / getUrlTail(d.layers_url)}")
+    notice(&"extracting {root / getUrlTail(d.layers_url)}")
 
-    var file = newTarFile(dir / getUrlTail(d.layers_url))
-    file.extract(dir)
+    var file = newTarFile(root / getUrlTail(d.layers_url))
+    file.extract(root)
+
+    notice(&"extracting {root / getUrlTail(d.inputUrl)}")
+    extractGz(root / getUrlTail(d.inputUrl))
 
 
 proc initDataset*(): Dataset =
@@ -142,6 +152,10 @@ proc initSparseChallenge*(): seq[Dataset] =
         d.layers_url = dataset["layers_url"].getStr()
         d.layers_size = dataset["layers_size"].getInt()
         d.name = dataset["name"].getStr()
+        d.inputUrl = dataset["input_url"].getStr()
+        d.cat120_url = dataset["cat120_url"].getStr()
+        d.cat480_url = dataset["cat480_url"].getStr()
+        d.cat1920_url = dataset["cat1920_url"].getStr()
         d.bibtex = bibtex
         result.add(d)
 

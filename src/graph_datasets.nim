@@ -39,13 +39,13 @@ var p = newParser("graph_datasets"):
     run:
       doCount(opts)
   command("download"):
-    arg("dataset", help = "name of dataset to download")
+    arg("dataset", default = ".*", help = "regex for datasets to download")
     flag("--dry-run")
     flag("--force", help = "overwrite output file")
     option("--format")
     flag("--list", help = "only list results")
     option("--name")
-    option("output", help = "output directory", default = ".")
+    option("--output", help = "output directory", default = ".")
     option("--provider")
     run:
       doDownload(opts)
