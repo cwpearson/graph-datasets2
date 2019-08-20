@@ -73,6 +73,8 @@ var p = newParser("graph_datasets"):
   command("relabel"):
     arg("input")
     arg("output")
+    option("-k", "--kind", default = "random", choices = @["random", "compact"])
+    option("--seed", default = "0")
     run:
       doRelabel(opts)
   command("version"):
