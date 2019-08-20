@@ -118,7 +118,7 @@ method writeEdge*(s: MtxStream, edge: Edge) =
         src = edge.src + 1
         dst = edge.dst + 1
         weight = edge.weight
-    assert src <= s.rows
+    assert src <= s.rows, &"edge with row {src} is outside matrix {s.rows}"
     assert dst <= s.cols, &"edge with col {dst} is outside matrix {s.cols}"
     assert s.num_edges_written <= s.entries, &"wrote more edges {s.num_edges_written} than expected {s.entries}"
     s.stream.writeLine($src & "\t" & $dst & "\t" & $weight)
@@ -126,7 +126,7 @@ method writeEdge*(s: MtxStream, edge: Edge) =
 
 
 proc readBanner *(s: MtxStream) =
-    ## expect to read a line line `%%MatrixMarket matrix coordinate real general` from the first line of the file
+    ## expect to read a line like `%%MatrixMarket matrix coordinate real general` from the first line of the file
     let curPos = s.getPosition()
 
     s.setPosition(0)
