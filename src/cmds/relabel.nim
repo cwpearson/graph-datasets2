@@ -19,7 +19,17 @@ type Method* = enum
     mCompact
     mRandom
 
-proc relabel(input_path, output_path: string, m: Method, seed: int = 0) =
+proc relabel(input_path, output_path: string, m: Method, seed = 0,
+        force = false) =
+
+    if absolutePath(input_path) == absolutePath(output_path):
+        error(&"input and output paths cannot match")
+        quit(1)
+
+    if not force:
+        if existsFile(output_path) or existsDir(output_path):
+            error(&"output path {output_path} already exists (--force to override)")
+            quit(1)
 
     info("open ", input_path)
     var ins = guessEdgeStreamReader(input_path)
@@ -87,6 +97,8 @@ proc relabel(input_path, output_path: string, m: Method, seed: int = 0) =
         if seed != 0:
             info(&"seed = {seed}")
             randomize(seed)
+        else:
+            randomize()
 
         notice("pass 1: count nodes")
         var
@@ -122,4 +134,4 @@ proc doRelabel *[T](opts: T): int {.discardable.} =
         quit(1)
 
     let seed = parseInt(opts.seed)
-    relabel(opts.input, opts.output, m = m, seed = seed)
+    relabel(opts.input, opts.output, m = m, seed = seed, force = opts.force)

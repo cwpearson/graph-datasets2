@@ -29,7 +29,7 @@ var p = newParser("graph_datasets"):
     run:
       doCacherows(opts)
   command("convert"):
-    flag("--force")
+    flag("-f", "--force", help = "overwrite output file")
     arg("input")
     arg("output")
     run:
@@ -41,7 +41,7 @@ var p = newParser("graph_datasets"):
   command("download"):
     arg("dataset", help = "name of dataset to download")
     flag("--dry-run")
-    flag("--force")
+    flag("--force", help = "overwrite output file")
     option("--format")
     flag("--list", help = "only list results")
     option("--name")
@@ -67,13 +67,15 @@ var p = newParser("graph_datasets"):
     arg("input")
     arg("output")
     option("-k", "--kind", default = "src", choices = @["srcr", "dst"])
-    flag("--force")
+    flag("-f", "--force", help = "overwrite output file")
     run:
       doSort(opts)
   command("relabel"):
     arg("input")
     arg("output")
-    option("-k", "--kind", default = "random", choices = @["random", "compact"])
+    flag("--force", help = "overwrite output file")
+    option("-k", "--kind", default = "random", choices = @["random", "compact"],
+        help = "relabel method")
     option("--seed", default = "0")
     run:
       doRelabel(opts)
