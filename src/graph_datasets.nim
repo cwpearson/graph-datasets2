@@ -15,13 +15,15 @@ import cmds/relabel
 import cmds/sort
 import cmds/version
 
+import format
+
 var p = newParser("graph_datasets"):
   flag("--debug")
   flag("--verbose")
   run:
     setLevel(lvlNotice)
     if opts.debug:
-      setLevel(lvlDebug)
+      setLevel(lvlInfo)
     if opts.verbose:
       setLevel(lvlAll)
   command("cacherows"):
@@ -30,6 +32,12 @@ var p = newParser("graph_datasets"):
       doCacherows(opts)
   command("convert"):
     flag("-f", "--force", help = "overwrite output file")
+    option("--input-kind", help = "format of input", default = $dkUnknown,
+        choices = @[$dkUnknown, $dkBmtx, $dkMtx, $dkTsv, $dkBel, $dkDelimited])
+    option("--delimiter", help = "delimiter for rows")
+    option("--src-pos", help = "column index for src")
+    option("--dst-pos", help = "column index for dst")
+    option("--weight-pos", help = "column index for weight")
     arg("input")
     arg("output")
     run:

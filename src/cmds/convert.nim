@@ -3,7 +3,6 @@ import system
 import strutils
 import sequtils
 import algorithm
-
 import os
 import sets
 import strformat
@@ -17,32 +16,39 @@ import ../bel
 import ../format
 import ../bmtx
 import ../mtx
+import ../delimited
 import ../edge_stream
 import ../graph_challenge
 
 
+type
+    ConvertError* = object of Exception
+    SrcKindUnknownError = object of ConvertError
 
-proc convert*(src: string, dst: string, force: bool): int {.discardable.} =
 
-    let
-        srcKind = guessFormat(src)
-        dstKind = guessFormat(dst)
+proc convert*(src: string, dst: string, force: bool, srcKindHint = dkUnknown,
+        srcPos = 0, dstPos = 0, weightPos = 0): int {.discardable.} =
 
     if not force and fileExists(dst) or dirExists(dst):
         error(&"{dst} alread exists")
         quit(1)
 
+    var srcKind = srcKindHint
     if srcKind == dkUnknown:
-        error("unable to determine format for source ", src)
-        quit(1)
+        srcKind = guessFormat(src)
+    let
+        dstKind = guessFormat(dst)
+
+    if srcKind == dkUnknown:
+        raise newException(SrcKindUnknownError, &"{src}")
 
     if dstKind == dkUnknown:
         echo "unable to determine format for dst ", src
         quit(1)
 
-    info("converting ", src, " ", srcKind, " to ", dst, " ", dstKind)
+    info(&"converting {src} ({srcKind}) to {dst} ({dstKind})")
 
-
+    ## Convert Twitter -> edge list
     if srcKind == dkTwitter and isEdgeList(dstKind):
 
         var initialSize = sets.rightSize(3_000_000_000)
@@ -88,8 +94,13 @@ proc convert*(src: string, dst: string, force: bool): int {.discardable.} =
             es.writeEdge(edge)
 
     elif isEdgeList(srcKind) and isEdgeList(dstKind):
-        var
-            srces = guessEdgeStreamReader(src)
+
+        var srces: EdgeStream
+        if srcKind == dkDelimited:
+            info(&"reading edge src,dst,weight from cols {srcPos},{dstPos},{weightPos}")
+            srces = openDelimitedStream(src, '\t', srcPos, dstPos, weightPos)
+        else:
+            srces = guessEdgeStreamReader(src, srcKind)
 
         # for some kinds of outputs, we need to know some info
         var
@@ -119,4 +130,19 @@ proc convert*(src: string, dst: string, force: bool): int {.discardable.} =
         quit(1)
 
 proc doConvert *[T](opts: T) =
-    convert(src = opts.input, dst = opts.output, force = opts.force)
+    var inputKind: DatasetKind
+    case opts.input_kind:
+    of $dkUnknown: inputKind = dkUnknown
+    of $dkDelimited: inputKind = dkDelimited
+    of $dkTsv: inputKind = dkTsv
+    of $dkBel: inputKind = dkBel
+    of $dkMtx: inputKind = dkMtx
+    of $dkBmtx: inputKind = dkBmtx
+
+    let srcPos = parseInt opts.src_pos
+    let dstPos = parseInt opts.dst_pos
+    let weightPos = parseInt opts.weight_pos
+
+    convert(src = opts.input, dst = opts.output, force = opts.force,
+            srcKindHint = inputKind, srcPos = srcPos, dstPos = dstPos,
+                    weightPos = weightPos)

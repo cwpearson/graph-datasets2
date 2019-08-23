@@ -11,12 +11,13 @@ import bmtx
 import logger
 
 type DatasetKind* = enum
-    dkBel
-    dkTsv
-    dkTwitter
-    dkBmtx
-    dkMtx
-    dkUnknown
+    dkBel = "bel"
+    dkTsv = "tsv"
+    dkTwitter = "twitter"
+    dkBmtx = "bmtx"
+    dkMtx = "mtx"
+    dkDelimited = "delimited"
+    dkUnknown = "unknown"
 
 proc guessFormat *(path: string): DatasetKind =
     let splittedPath = splitPath(path)
@@ -37,7 +38,7 @@ proc guessFormat *(path: string): DatasetKind =
 
 proc isEdgeList *(dk: DatasetKind): bool =
     case dk
-    of dkBel, dkBmtx, dkMtx, dkTsv:
+    of dkBel, dkBmtx, dkMtx, dkTsv, dkDelimited:
         return true
     of dkTwitter, dkUnknown:
         return false
