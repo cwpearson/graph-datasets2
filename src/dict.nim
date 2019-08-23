@@ -114,6 +114,15 @@ proc getOrDefault*[A, B](t: var Dict[A, B], key: A): B =
         if k == key:
             result = v
 
+proc getOrDefault*[A, B](t: var Dict[A, B], key: A, default: B): B =
+    result = B
+    let dataIdx = rawGet(t, key)
+    # find key if present
+    for i, kv in t.data[dataIdx]:
+        let (k, v) = kv
+        if k == key:
+            result = v
+
 proc enlarge[A, B](t: var Dict[A, B]) =
     if float(t.load) / float(t.capacity) > loadLimit:
         # echo "enlarging ", t.capacity, " -> ", t.capacity * growthFactor
