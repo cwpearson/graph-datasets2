@@ -50,6 +50,12 @@ nimble build
 ```
 
 Optionally, `-d:webview` can be added to use the system webview instead of the default browser for the histogram plot.
+
+On Ubuntu 18.04 you will need
+```
+sudo apt install libgtk-3-dev libwebkit2gtk-4.0-dev
+```
+
 `-d:release` can be added to improve performance.
 
 ## Complete
