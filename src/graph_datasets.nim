@@ -10,6 +10,7 @@ import cmds/convert
 import cmds/count
 import cmds/download
 import cmds/generate
+import cmds/histogram
 import cmds/orient
 import cmds/relabel
 import cmds/sort
@@ -65,6 +66,15 @@ var p = newParser("graph_datasets"):
     flag("--force")
     run:
       doGenerate(opts)
+  command("histogram"):
+    arg("input")
+    option("--output", help = "save output file")
+    option("--title", help = "title of histogram",
+        default = "Degree Distribution")
+    option("--width", help = "width of histogram in px", default = "0")
+    option("--height", help = "height of histogram in px", default = "0")
+    run:
+      doHistogram(opts)
   command("orient"):
     arg("input")
     arg("output")
@@ -74,7 +84,7 @@ var p = newParser("graph_datasets"):
   command("sort"):
     arg("input")
     arg("output")
-    option("-k", "--kind", default = "src", choices = @["srcr", "dst"])
+    option("-k", "--kind", default = "src", choices = @["src", "dst"])
     flag("-f", "--force", help = "overwrite output file")
     run:
       doSort(opts)
