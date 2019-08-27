@@ -45,28 +45,23 @@ proc searchForC(N, nnz: int, g: float): float =
     var prevNnz = -1
 
     while true:
-        info(&"try c = {c:e}")
+        info(&"try c = {c:e}...")
         let check = getNnz(N, g, c)
+        info(&"...yielded {check} edges")
 
         if prevC == c:
             info(&"c unchanged")
             result = c
             break
-        elif abs(c - prevC) / min(prevC, c) < 1:
+        elif abs(c - prevC) / abs(min(prevC, c)) < 1:
             if check == prevNnz:
                 info(&"nnz unchanged")
                 result = c
                 break
-
-
         if check < nnz:
-            # c is too small
             lb = c
-            # echo "^"
         elif check > nnz:
-            # c was too big
             ub = c
-            # echo "v"
         else:
             # echo &"c yielded {check} nnzs"
             result = c
