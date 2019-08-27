@@ -33,6 +33,7 @@ Download and extract datasets.
 | Matrix Market Coordinate | file | `.mtx` extension | [nist](https://math.nist.gov/MatrixMarket/formats.html)
 | Binary Matrix Market Coordinate | file | `.bmtx` extension | [bmtx](https://github.com/cwpearson/graph-datasets2#bmtx)
 | Twitter | file | `twitter_rv.zip` | [twitter](https://github.com/cwpearson/graph-datasets2#twitter)
+| delimited | file | hint | [delimited](https://github.com/cwpearson/graph-datasets2#delimited)
 
 * `graph_datasets convert a.tsv b.bmtx`: convert `a` from GraphChallenge tsv to binary matrix-market format.
 
@@ -120,3 +121,25 @@ The next bytes are a sequence of 24 byte fields, where each field is
 * 8-byte IEEE 754 weight value
 
 Note that like the matrix-market format, indices are 1-based instead of 0-based.
+
+### Delimited
+
+This is a generic name for any edge-list format where edges are separated by newlines, and fields within the edge are separated by some delimiter.
+
+To convert this format to any other, use the convert command
+
+```
+./graph_datasets convert --input-kind delimited --src-pos 1 --dst-pos 0 --weight-pos 2 --delimiter '\t' edges.txt
+```
+
+This would read edges.txt as if it were an edge list that was line-delimited, where the field in each line was separate by a tab, and the dst node came first, followed by the source node, followed by the weight:
+
+```
+0    1  1.0
+0    2 -1.0
+```
+edge 1->0 with weight 1.0 and edge 2->0 with weight -1.0.
+
+The i and j indices do not have to be integers.
+If they are not, this command will convert each unique field to a new integer ID in the emitted edge list.
+The weight must be interpretable as a real number.
