@@ -78,7 +78,7 @@ nimble build -d:release
 - [ ] Download of datasets
     - [x] [Twitter](http://an.kaist.ac.kr/traces/WWW2010.html)
     - [x] [Static Graph Challenge](https://graphchallenge.mit.edu/data-sets)
-    - [ ] [Sparse Challenge](https://graphchallenge.mit.edu/data-sets)
+    - [x] [Sparse Challenge](https://graphchallenge.mit.edu/data-sets)
     - [ ] [Matrix Market](https://math.nist.gov/MatrixMarket/browse.html)
     - [ ] [SuiteSparse](https://sparse.tamu.edu/)
 
@@ -104,3 +104,19 @@ nimble build -d:release
 ### BEL
 
 ### Twitter
+
+### MTX
+
+The [matrix-market coordinate format](https://math.nist.gov/MatrixMarket/formats.html)
+
+### BMTX
+
+A binary version of the [matrix-market](https://math.nist.gov/MatrixMarket/formats.html) coordinate general real format.
+
+The first 24 bytes are `rows`, `cols`, `entries`, each as 8-byte integers.
+The next bytes are a sequence of 24 byte fields, where each field is
+* 8-byte integer `i` index
+* 8-byte integer `j` index
+* 8-byte IEEE 754 weight value
+
+Note that like the matrix-market format, indices are 1-based instead of 0-based.
