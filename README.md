@@ -43,10 +43,13 @@ Download and extract datasets.
 Install the latest stable version of nim, then
 
 ```
-nimble build -d:release
+nimble build
 ./graph_datasets --help
 ./tc --help
 ```
+
+Optionally, `-d:webview` can be added to use the system webview instead of the default browser for the histogram plot.
+`-d:release` can be added to improve performance.
 
 ## Complete
 
