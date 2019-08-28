@@ -8,6 +8,6 @@ elif [ -n "${CROSS_OS+x}" ]; then
         nimble build -d:mingw --cpu:amd64 -d:release
     fi
 else
-    nimble build -d:release
+    nimble build -d:release -d:webview
     ./graph_datasets version
 fi

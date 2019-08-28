@@ -50,6 +50,8 @@ proc histogram(es: EdgeStream, output, title: string, width, height: int) =
 
 
 proc doHistogram *[T](opts: T) =
+    when not defined(webview):
+        warn("histogram may not work without webview")
     var es = guessEdgeStreamReader(opts.input)
     let
         width = parseInt opts.width
