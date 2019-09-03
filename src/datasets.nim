@@ -40,6 +40,9 @@ type
         cat120_url*: string
         cat480_url*: string
         cat1920_url*: string
+        images_url*: string
+        images_size*: int
+
 
 proc newSparseChallengeDataset(): SparseChallengeDataset =
     new(result)
@@ -114,25 +117,38 @@ method extract*(d: GraphChallengeStaticDataset, dir: string) =
 
 method download*(d: SparseChallengeDataset, dir: string) =
     ## download the dataset into directory dir
-    notice(&"download {d.layers_url}")
-    retrieveUrl(d.layers_url, getUrlTail(d.layers_url))
-    retrieveUrl(d.cat120_url, getUrlTail(d.cat120_url))
-    retrieveUrl(d.cat480_url, getUrlTail(d.cat480_url))
-    retrieveUrl(d.cat1920_url, getUrlTail(d.cat1920_url))
+
+
+
+    proc doit(url: string) =
+        let
+            src = url
+            dst = dir / getUrlTail(url)
+        notice(&"download {src} to {dst}")
+        retrieveUrl(src, dst)
+    doit(d.layers_url)
+    doit(d.cat120_url)
+    doit(d.cat480_url)
+    doit(d.cat1920_url)
+    doit(d.images_url)
 
 method extract*(d: SparseChallengeDataset, dir: string) =
     ## extract a previously-downloaded dataset, if necessary
 
     notice(&"extracting {dir / getUrlTail(d.layers_url)}")
-
     var file = newTarFile(dir / getUrlTail(d.layers_url))
     file.extract(dir)
+    file.close()
+
+    notice(&"extracting {dir / getUrlTail(d.images_url)}")
+    extractGz(dir / getUrlTail(d.images_url))
 
 
 proc initDataset*(): Dataset =
     result
 
 proc initSparseChallenge*(): seq[Dataset] =
+
     let json = parseJson(sparseChallenge2019Raw)
     let bibtex = json{"bibtex"}.getStr()
     for dataset in json["datasets"]:
@@ -141,6 +157,10 @@ proc initSparseChallenge*(): seq[Dataset] =
         d.provider = "SparseChallenge"
         d.layers_url = dataset["layers_url"].getStr()
         d.layers_size = dataset["layers_size"].getInt()
+        d.cat120_url = dataset["cat120_url"].getStr()
+        d.cat480_url = dataset["cat480_url"].getStr()
+        d.cat1920_url = dataset["cat1920_url"].getStr()
+        d.images_url = dataset["images_url"].getStr()
         d.name = dataset["name"].getStr()
         d.bibtex = bibtex
         result.add(d)
