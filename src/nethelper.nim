@@ -11,7 +11,9 @@ import uri
 
 import logger
 
-proc getUrlTail*(url:string): string =
+type RetrieveError* = object of Exception
+
+proc getUrlTail*(url: string): string =
     var uri = initUri()
     parseUri(url, uri)
     let splittedPath = splitPath(uri.path)
@@ -30,6 +32,11 @@ proc getUrlSize *(url: string): int =
         result = -1
 
 proc retrieveUrl *(url: string, path: string, retries: int = 3) =
+
+    if url == "":
+        let err = &"cannot retrieve url: \"{url}\""
+        error(err)
+        raise newException(RetrieveError, err)
 
     var client: AsyncHttpClient = newAsyncHttpClient()
     defer: client.close()
