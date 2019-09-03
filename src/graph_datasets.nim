@@ -54,7 +54,7 @@ var p = newParser("graph_datasets"):
     option("--format")
     flag("--list", help = "only list results")
     option("--name")
-    option("output", help = "output directory", default = ".")
+    option("--output", help = "output directory", default = ".")
     option("--provider")
     run:
       doDownload(opts)
