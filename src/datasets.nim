@@ -40,7 +40,7 @@ type
         cat120_url*: string
         cat480_url*: string
         cat1920_url*: string
-        images_url*: string
+        imagesUrl*: string
         images_size*: int
 
 
@@ -118,30 +118,34 @@ method extract*(d: GraphChallengeStaticDataset, dir: string) =
 method download*(d: SparseChallengeDataset, dir: string) =
     ## download the dataset into directory dir
 
-
+    let root = dir / d.name
+    notice(&"create {root}")
+    createDir(root)
 
     proc doit(url: string) =
         let
             src = url
-            dst = dir / getUrlTail(url)
+            dst = root / getUrlTail(url)
         notice(&"download {src} to {dst}")
         retrieveUrl(src, dst)
     doit(d.layers_url)
     doit(d.cat120_url)
     doit(d.cat480_url)
     doit(d.cat1920_url)
-    doit(d.images_url)
+    doit(d.imagesUrl)
 
 method extract*(d: SparseChallengeDataset, dir: string) =
     ## extract a previously-downloaded dataset, if necessary
+    let root = dir / d.name
+    assert existsDir(root)
 
-    notice(&"extracting {dir / getUrlTail(d.layers_url)}")
-    var file = newTarFile(dir / getUrlTail(d.layers_url))
-    file.extract(dir)
-    file.close()
+    notice(&"extracting {root / getUrlTail(d.layers_url)}")
 
-    notice(&"extracting {dir / getUrlTail(d.images_url)}")
-    extractGz(dir / getUrlTail(d.images_url))
+    var file = newTarFile(root / getUrlTail(d.layers_url))
+    file.extract(root)
+
+    notice(&"extracting {root / getUrlTail(d.imagesUrl)}")
+    extractGz(root / getUrlTail(d.imagesUrl))
 
 
 proc initDataset*(): Dataset =
@@ -160,7 +164,7 @@ proc initSparseChallenge*(): seq[Dataset] =
         d.cat120_url = dataset["cat120_url"].getStr()
         d.cat480_url = dataset["cat480_url"].getStr()
         d.cat1920_url = dataset["cat1920_url"].getStr()
-        d.images_url = dataset["images_url"].getStr()
+        d.imagesUrl = dataset["images_url"].getStr()
         d.name = dataset["name"].getStr()
         d.bibtex = bibtex
         result.add(d)

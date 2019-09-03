@@ -24,7 +24,7 @@ proc getUrlSize *(url: string): int =
     debug(&"request remote size for {url}")
     let client = newHttpClient()
     let response = client.request(url)
-    debug(&"got {response.headers.table}")
+    # debug(&"got {response.headers.table}")
     if "content-length" in response.headers.table:
         let rawLength = response.headers.table["content-length"][0]
         result = parseInt(rawLength)
@@ -42,6 +42,8 @@ proc retrieveUrl *(url: string, path: string, retries: int = 3, md5 = "") =
         let err = &"cannot retrieve url: \"{url}\""
         error(err)
         raise newException(RetrieveError, err)
+
+    info(&"download {url} -> {path}")
 
     var client: AsyncHttpClient = newAsyncHttpClient()
     defer: client.close()
@@ -61,7 +63,7 @@ proc retrieveUrl *(url: string, path: string, retries: int = 3, md5 = "") =
                 let remoteSz = getUrlSize(url)
                 info("remote size is ", remoteSz)
 
-                if sz < remoteSz:
+                if sz < remoteSz or remoteSz < 0:
                     info("partial download resuming")
                     headers = newHttpHeaders({
                         "Range": &"bytes={sz}-"
@@ -73,6 +75,7 @@ proc retrieveUrl *(url: string, path: string, retries: int = 3, md5 = "") =
                 else:
                     # no download needed
                     break
+
             else: # file missing
                 file = openAsync(path, fmWrite)
 
