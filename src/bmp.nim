@@ -16,6 +16,9 @@ proc `[]`*(i: Image, x, y: int): Image.T =
 proc `mget`*(i: Image, x, y: int): var Image.T =
     i.data[y * i.width + x]
 
+iterator mitems*(i: Image): (int, int, var Image.T) =
+    yield (0, 0, i.mget(0, 0))
+
 
 proc newImage*[T](height, width: int): Image[T] =
     new(result)

@@ -104,6 +104,8 @@ var p = newParser("graph_datasets"):
   command("visualize"):
     arg("input")
     arg("output")
+    flag("--no-log", help = "do not apply log scaling")
+    option("--size", help = "image size", default = "1000")
     run:
       doVisualize(opts)
 

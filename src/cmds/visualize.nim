@@ -20,7 +20,7 @@ import ../edge_stream
 import ../bmp
 
 
-proc visualize (input, output: string) =
+proc visualize (input, output: string, size: int, noLog: bool) =
     info("open " & $input)
     var es = guessEdgeStreamReader(input)
     if es == nil:
@@ -28,8 +28,8 @@ proc visualize (input, output: string) =
         quit(1)
 
     let
-        width = 100
-        height = 100
+        width = size
+        height = size
 
 
     var bins = newImage[int](width, height)
@@ -50,10 +50,11 @@ proc visualize (input, output: string) =
     # echo bins.data
 
     # log of bins
-    for i, v in bins.data:
-        if v != 0:
-            bins.data[i] = int(log2(v.float))
-    # echo bins.data
+    if not noLog:
+        for i, v in bins.data:
+            if v != 0:
+                bins.data[i] = int(log2(v.float))
+        # echo bins.data
 
     # normalize to 255
     let
@@ -68,5 +69,7 @@ proc visualize (input, output: string) =
 
 
 proc doVisualize *[T](opts: T) =
-    visualize(opts.input, opts.output)
+    let
+        size = parseInt(opts.size)
+    visualize(opts.input, opts.output, size, opts.no_log)
 
