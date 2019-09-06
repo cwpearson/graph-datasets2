@@ -15,6 +15,7 @@ import cmds/orient
 import cmds/relabel
 import cmds/sort
 import cmds/version
+import cmds/visualize
 
 import format
 
@@ -100,6 +101,11 @@ var p = newParser("graph_datasets"):
   command("version"):
     run:
       doVersion(opts)
+  command("visualize"):
+    arg("input")
+    arg("output")
+    run:
+      doVisualize(opts)
 
 
 when isMainModule:
