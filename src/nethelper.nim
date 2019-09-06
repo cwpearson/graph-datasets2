@@ -11,7 +11,9 @@ import uri
 
 import logger
 
-proc getUrlTail*(url:string): string =
+type RetrieveError* = object of Exception
+
+proc getUrlTail*(url: string): string =
     var uri = initUri()
     parseUri(url, uri)
     let splittedPath = splitPath(uri.path)
@@ -22,14 +24,26 @@ proc getUrlSize *(url: string): int =
     debug(&"request remote size for {url}")
     let client = newHttpClient()
     let response = client.request(url)
-    debug(&"got {response.headers.table}")
+    # debug(&"got {response.headers.table}")
     if "content-length" in response.headers.table:
         let rawLength = response.headers.table["content-length"][0]
         result = parseInt(rawLength)
     else:
         result = -1
 
-proc retrieveUrl *(url: string, path: string, retries: int = 3) =
+proc retrieveUrl *(url: string, path: string, retries: int = 3, md5 = "") =
+    ## download the contents of `url` and place it in a file at `path`
+    ##
+    ## if the path already exists, and the host supports ranges, download the file until it is the right size
+    ## if an md5 is provided, check the hash matches
+    ## if the hash fails, retry the whole download
+
+    if url == "":
+        let err = &"cannot retrieve url: \"{url}\""
+        error(err)
+        raise newException(RetrieveError, err)
+
+    info(&"download {url} -> {path}")
 
     var client: AsyncHttpClient = newAsyncHttpClient()
     defer: client.close()
@@ -44,13 +58,25 @@ proc retrieveUrl *(url: string, path: string, retries: int = 3) =
             debug("looking for ", path)
             if fileExists(path):
                 let sz = getFileSize(path)
-                debug("partial download, existing file is size ", sz)
+                info("existing file is size ", sz)
 
-                headers = newHttpHeaders({
-                    "Range": &"bytes={sz}-"
-                })
-                file = openAsync(path, fmAppend)
-            else:
+                let remoteSz = getUrlSize(url)
+                info("remote size is ", remoteSz)
+
+                if sz < remoteSz or remoteSz < 0:
+                    info("partial download resuming")
+                    headers = newHttpHeaders({
+                        "Range": &"bytes={sz}-"
+                    })
+                    file = openAsync(path, fmAppend)
+                elif sz > remoteSz:
+                    warn("local file is too big. overwriting")
+                    file = openAsync(path, fmWrite)
+                else:
+                    # no download needed
+                    break
+
+            else: # file missing
                 file = openAsync(path, fmWrite)
 
             debug("client.request")

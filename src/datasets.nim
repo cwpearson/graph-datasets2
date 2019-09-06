@@ -40,6 +40,9 @@ type
         cat120_url*: string
         cat480_url*: string
         cat1920_url*: string
+        imagesUrl*: string
+        images_size*: int
+
 
 proc newSparseChallengeDataset(): SparseChallengeDataset =
     new(result)
@@ -114,25 +117,42 @@ method extract*(d: GraphChallengeStaticDataset, dir: string) =
 
 method download*(d: SparseChallengeDataset, dir: string) =
     ## download the dataset into directory dir
-    notice(&"download {d.layers_url}")
-    retrieveUrl(d.layers_url, getUrlTail(d.layers_url))
-    retrieveUrl(d.cat120_url, getUrlTail(d.cat120_url))
-    retrieveUrl(d.cat480_url, getUrlTail(d.cat480_url))
-    retrieveUrl(d.cat1920_url, getUrlTail(d.cat1920_url))
+
+    let root = dir / d.name
+    notice(&"create {root}")
+    createDir(root)
+
+    proc doit(url: string) =
+        let
+            src = url
+            dst = root / getUrlTail(url)
+        notice(&"download {src} to {dst}")
+        retrieveUrl(src, dst)
+    doit(d.layers_url)
+    doit(d.cat120_url)
+    doit(d.cat480_url)
+    doit(d.cat1920_url)
+    doit(d.imagesUrl)
 
 method extract*(d: SparseChallengeDataset, dir: string) =
     ## extract a previously-downloaded dataset, if necessary
+    let root = dir / d.name
+    assert existsDir(root)
 
-    notice(&"extracting {dir / getUrlTail(d.layers_url)}")
+    notice(&"extracting {root / getUrlTail(d.layers_url)}")
 
-    var file = newTarFile(dir / getUrlTail(d.layers_url))
-    file.extract(dir)
+    var file = newTarFile(root / getUrlTail(d.layers_url))
+    file.extract(root)
+
+    notice(&"extracting {root / getUrlTail(d.imagesUrl)}")
+    extractGz(root / getUrlTail(d.imagesUrl))
 
 
 proc initDataset*(): Dataset =
     result
 
 proc initSparseChallenge*(): seq[Dataset] =
+
     let json = parseJson(sparseChallenge2019Raw)
     let bibtex = json{"bibtex"}.getStr()
     for dataset in json["datasets"]:
@@ -141,6 +161,10 @@ proc initSparseChallenge*(): seq[Dataset] =
         d.provider = "SparseChallenge"
         d.layers_url = dataset["layers_url"].getStr()
         d.layers_size = dataset["layers_size"].getInt()
+        d.cat120_url = dataset["cat120_url"].getStr()
+        d.cat480_url = dataset["cat480_url"].getStr()
+        d.cat1920_url = dataset["cat1920_url"].getStr()
+        d.imagesUrl = dataset["images_url"].getStr()
         d.name = dataset["name"].getStr()
         d.bibtex = bibtex
         result.add(d)
