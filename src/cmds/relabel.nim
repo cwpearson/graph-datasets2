@@ -6,6 +6,7 @@ import algorithm
 import os
 import random
 import strformat
+import times
 
 import ../edge
 import ../bel
@@ -98,7 +99,10 @@ proc relabel(input_path, output_path: string, m: Method, seed = 0,
             info(&"seed = {seed}")
             randomize(seed)
         else:
-            randomize()
+            let now = times.getTime()
+            let seed = convert(Seconds, Nanoseconds, now.toUnix) + now.nanosecond
+            info(&"seed = {seed}")
+            randomize(seed)
 
         notice("pass 1: count nodes")
         var
