@@ -10,14 +10,24 @@ Download [the latest release](https://github.com/cwpearson/graph-datasets2/relea
 
 ## Quick Start
 
-* Conversion between multiple formats
-* Resumable downloads (for large datasets)
-* Some statistics on a variety of datasets
+## `graph_datasets --help`
+
+See all the available commands
+
+## `graph_datasets visualize`
+
+Generate a BMP of the adjacency matrix sparsity pattern.
+The row and column values in the matrix are added into pixel bins, which are then log-scaled before displaying.
+
+* `graph_datasets visualize a.bel out.bmp`: Read the edge list in `a.bel` and generate a bitmap in `out.bmp`
+* `graph_datasets visualize a.bel out.bmp --size 200 --no-log`: Don't apply log scaling, and make the output image 200x200.
+
 
 ## `graph_datasets download`
 
 Download and extract datasets.
 
+* `graph_datasets download neuron1024`: Download the sparse challenge 1024x1024 dataset.
 * `graph_datasets download --list`: List all datasets.
 * `graph_datasets download --list name`: Show datasets matching regex `name`.
 * `graph_datasets download name --format tsv`: Download datasets matching regex `name` with format `tsv`.
