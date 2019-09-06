@@ -16,8 +16,15 @@ proc `[]`*(i: Image, x, y: int): Image.T =
 proc `mget`*(i: Image, x, y: int): var Image.T =
     i.data[y * i.width + x]
 
-iterator mitems*(i: Image): (int, int, var Image.T) =
-    yield (0, 0, i.mget(0, 0))
+iterator mitems*(i: Image): tuple[x, y: int, val: var Image.T] =
+    for row in 0 ..< i.height:
+        for col in 0 ..< i.width:
+            yield (col, row, i.mget(col, row))
+
+iterator items*(i: Image): tuple[x, y: int, val: Image.T] =
+    for row in 0 ..< i.height:
+        for col in 0 ..< i.width:
+            yield (col, row, i[col, row])
 
 
 proc newImage*[T](height, width: int): Image[T] =

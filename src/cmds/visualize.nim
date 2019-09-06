@@ -1,11 +1,8 @@
 import streams
-import system
 import strutils
 import sequtils
-import algorithm
 import tables
 import os
-import sets
 import math
 import strformat
 
@@ -31,17 +28,17 @@ proc visualize (input, output: string, size: int, noLog: bool) =
         width = size
         height = size
 
-
     var bins = newImage[int](width, height)
 
-    info(&"get max node")
+    notice(&"pass 1: counting nodes")
     var maxNode = -1
-
     for edge in edges(es):
         maxNode = max(maxNode, edge.src)
         maxNode = max(maxNode, edge.dst)
+    info(&"max node was {maxNode}")
     maxNode += 1
 
+    notice(&"pass 2: binning edges")
     for edge in edges(es):
         let
             sidx = int(float(edge.src) / float(maxNode) * width.float)
@@ -49,20 +46,47 @@ proc visualize (input, output: string, size: int, noLog: bool) =
         bins.mget(sidx, didx) += 1
     # echo bins.data
 
+    # conver to float
+    info(&"convert to float")
+    var floatBins = newImage[float](width, height)
+    for x, y, p in items(bins):
+        floatBins[x, y] = p.float
+    # echo floatBins.data
+
     # log of bins
     if not noLog:
-        for i, v in bins.data:
+        info(&"log(count+1)")
+        for x, y, v in items(floatBins):
             if v != 0:
-                bins.data[i] = int(log2(v.float))
-        # echo bins.data
+                floatBins[x, y] = log2(v+1) # 0 -> 0, 1 -> 1, 2->1.6, 3->2
+            else:
+                floatBins[x, y] = v
+        # echo floatBins.data
 
     # normalize to 255
+    info(&"normalize to 0-255")
     let
-        maxVal = max(bins.data)
-    for i, v in bins.data:
-        bins.data[i] = int(v.float * 255.0 / maxVal.float)
-    # echo bins.data
+        maxVal = max(floatBins.data)
+    info(&"max val pre-normalization was {maxVal}")
+    if maxVal == 0:
+        error(&"scaled bin count is always 0. Try reducing output size")
+        quit(1)
 
+    for x, y, v in items(floatBins):
+        floatBins[x, y] = v * 255.0 / maxVal
+        if floatBins[x, y] < 0:
+            echo &"{x} {y}", " ", v, " ", floatBins[x, y], &" {v * 255.0}, {v * 255.0 / maxVal.float}"
+        assert floatBins[x, y] >= 0
+        assert floatBins[x, y] < 256
+    # echo max(floatBins.data)
+
+    # convert back to int
+    info(&"convert to ints")
+    for x, y, p in items(floatBins):
+        bins[x, y] = p.int
+    # echo max(bins.data)
+
+    notice(&"save to {output}")
     var s = openFileStream(output, fmWrite)
     bins.save(s)
     s.close()
