@@ -91,7 +91,7 @@ var p = newParser("graph_datasets"):
   command("relabel"):
     arg("input")
     arg("output")
-    flag("--force", help = "overwrite output file")
+    flag("-f", "--force", help = "overwrite output file")
     option("-k", "--kind", default = "random", choices = @["random", "compact"],
         help = "relabel method")
     option("--seed", default = "0")
