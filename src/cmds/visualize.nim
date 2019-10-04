@@ -37,7 +37,7 @@ proc visualize (input, output: string, size: int, noLog: bool) =
         let
             sidx = int(float(edge.src) / float(maxNode) * width.float)
             didx = int(float(edge.dst) / float(maxNode) * height.float)
-        bins.mget(sidx, didx) += 1
+        bins.mget(didx, sidx) += 1
     # echo bins.data
 
     # conver to float
