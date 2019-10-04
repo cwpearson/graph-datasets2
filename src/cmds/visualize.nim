@@ -63,11 +63,13 @@ proc visualize (input, output: string, size: int, noLog: bool) =
         maxVal = max(floatBins.data)
     info(&"max val pre-normalization was {maxVal}")
     if maxVal == 0:
-        error(&"scaled bin count is always 0. Try reducing output size")
-        quit(1)
+        warn(&"scaled bin count is always 0. Try reducing output size")
 
     for x, y, v in items(floatBins):
-        floatBins[x, y] = v * 255.0 / maxVal
+        if maxVal != 0:
+            floatBins[x, y] = v * 255.0 / maxVal
+        else:
+            floatBins[x, y] = 0.0
         if floatBins[x, y] < 0:
             echo &"{x} {y}", " ", v, " ", floatBins[x, y], &" {v * 255.0}, {v * 255.0 / maxVal.float}"
         assert floatBins[x, y] >= 0
