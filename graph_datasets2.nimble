@@ -11,7 +11,7 @@ bin           = @["graph_datasets", "tc"]
 # Dependencies
 
 requires "nim >= 0.20.0"
-requires "argparse"
+requires "argparse >= 0.9.0"
 requires "zip"
 requires "untar"
 requires "tempdir >= 1.0.0"
