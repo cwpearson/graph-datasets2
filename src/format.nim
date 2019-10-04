@@ -19,6 +19,23 @@ type DatasetKind* = enum
     dkDelimited = "delimited"
     dkUnknown = "unknown"
 
+proc fromStr *(str: string): DatasetKind =
+    if $dkBel == str:
+        return dkBel
+    if $dkTsv == str:
+        return dkTsv
+    elif $dkTwitter == str:
+        return dkTwitter
+    elif $dkBmtx == str:
+        return dkBmtx
+    elif $dkMtx == str:
+        return dkMtx
+    elif "mm" == str:
+        return dkMtx
+    elif $dkDelimited == str:
+        return dkDelimited
+    return dkUnknown
+
 proc guessFormat *(path: string): DatasetKind =
     let splittedPath = splitPath(path)
     if splittedPath.tail == "twitter_rv.net":
@@ -32,6 +49,8 @@ proc guessFormat *(path: string): DatasetKind =
     elif splittedFile.ext == ".bmtx":
         return dkBmtx
     elif splittedFile.ext == ".mtx":
+        return dkMtx
+    elif splittedFile.ext == ".mm":
         return dkMtx
 
     return dkUnknown
