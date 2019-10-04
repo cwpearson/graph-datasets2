@@ -39,9 +39,10 @@ proc initStats(): Stats =
     )
 
 
-proc count (path: string): int {.discardable.} =
+proc count (path: string, formatStr: string = "unknown"): int {.discardable.} =
     info("open ", path)
-    var es = guessEdgeStreamReader(path)
+    let format: DatasetKind = fromStr(formatStr)
+    var es = guessEdgeStreamReader(path, format)
     if es == nil:
         error(&"can't count {path}")
         quit(1)
@@ -94,7 +95,7 @@ proc count (path: string): int {.discardable.} =
 
 
 proc doCount *[T](opts: T): int {.discardable.} =
-    count(opts.input)
+    count(opts.input, formatStr = opts.format)
 
 when isMainModule:
     import times

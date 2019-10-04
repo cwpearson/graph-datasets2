@@ -46,6 +46,7 @@ var p = newParser("graph_datasets"):
       doConvert(opts)
   command("count"):
     arg("input")
+    option("--format", choices = @["bel", "tsv", "bmtx", "mtx"])
     run:
       doCount(opts)
   command("download"):
