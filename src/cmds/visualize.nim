@@ -1,16 +1,10 @@
 import streams
 import strutils
-import sequtils
-import tables
 import os
 import math
 import strformat
 
 import ../edge
-import ../bel
-import ../tsv
-import ../mtx
-import ../bmtx
 import ../format
 import ../logger
 import ../edge_stream
