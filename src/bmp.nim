@@ -7,12 +7,24 @@ type Image*[T] = ref object of RootObj
 
 
 proc `[]=`*(i: Image, x, y: int, val: Image.T) =
+    if x >= i.width:
+        raise new IndexError
+    if y >= i.height:
+        raise new IndexError
     i.data[y * i.width + x] = val
 
 proc `[]`*(i: Image, x, y: int): Image.T =
+    if x >= i.width:
+        raise new IndexError
+    if y >= i.height:
+        raise new IndexError
     i.data[y * i.width + x]
 
 proc `mget`*(i: Image, x, y: int): var Image.T =
+    if x >= i.width:
+        raise new IndexError
+    if y >= i.height:
+        raise new IndexError
     i.data[y * i.width + x]
 
 iterator mitems*(i: Image): tuple[x, y: int, val: var Image.T] =
@@ -104,9 +116,10 @@ proc save*(image: Image, stream: Stream) =
 
 
 when isMainModule:
-    var img = newImage[uint8](1000, 1000)
+    var img = newImage[uint8](1000, 500)
     img[0, 0] = 255'u8
     img[0, 1] = 127'u8
+    img[498, 800] = 255'u8
 
     var s = openFileStream("test.bmp", fmWrite)
 
