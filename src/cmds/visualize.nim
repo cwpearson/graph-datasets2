@@ -26,14 +26,20 @@ proc visualize (input, output: string, imgHeightHint, imgWidthHint: int,
         maxRow = max(maxRow, edge.src)
         maxCol = max(maxCol, edge.dst)
     info(&"max row/cols were {maxRow}/{maxCol}")
-    let matWidth = if matWidthHint != 0:
+    var matWidth = if matWidthHint != 0:
         matWidthHint
     else:
         maxCol + 1
-    let matHeight = if matHeightHint != 0:
+    var matHeight = if matHeightHint != 0:
         matHeightHint
     else:
         maxRow + 1
+    info(&"matrix WxH is {matWidth}x{matHeight}")
+
+    if matWidth == 0 or matHeight == 0:
+        warn(&"matrix is empty")
+        matWidth = 1
+        matHeight = 1
 
 
     var imgWidth, imgHeight: int
@@ -42,12 +48,12 @@ proc visualize (input, output: string, imgHeightHint, imgWidthHint: int,
         imgWidth = int(imgHeightHint.float * matWidth.float / matHeight.float)
     elif imgWidthHint != 0:
         imgWidth = imgWidthHint
-        imgHeight = int(imgWidthHint.float * matWidth.float / matHeight.float)
+        imgHeight = int(imgWidthHint.float * matHeight.float / matWidth.float)
     else:
         imgWidth = int(1000.0 * matWidth.float / max(matWidth, matHeight).float)
         imgHeight = int(1000.0 * matHeight.float / max(matWidth,
                 matHeight).float)
-    info(&"image dimensions are {imgWidth}x{imgHeight}")
+    info(&"image WxH is {imgWidth}x{imgHeight}")
 
 
     var bins = newImage[int](imgWidth, imgHeight)
@@ -113,7 +119,7 @@ proc doVisualize *[T](opts: T) =
         imgHeightHint = parseInt(opts.img_height)
         imgWidthHint = parseInt(opts.img_width)
         matHeightHint = parseInt(opts.mat_height)
-        matWidthHint = parseInt(opts.mat_height)
+        matWidthHint = parseInt(opts.mat_width)
     visualize(opts.input, opts.output, imgHeightHint, imgWidthHint,
             matHeightHint, matWidthHint, opts.no_log)
 
