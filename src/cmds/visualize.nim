@@ -110,7 +110,6 @@ proc visualize (input, output: string, imgHeightHint, imgWidthHint: int,
 
 proc doVisualize *[T](opts: T) =
     let
-        size = parseInt(opts.size)
         imgHeightHint = parseInt(opts.img_height)
         imgWidthHint = parseInt(opts.img_width)
         matHeightHint = parseInt(opts.mat_height)

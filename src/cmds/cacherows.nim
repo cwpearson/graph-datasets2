@@ -3,8 +3,6 @@ import strutils
 import sequtils
 import algorithm
 import os
-import sets
-import math
 
 import ../edge
 import ../bel

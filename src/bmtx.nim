@@ -1,6 +1,4 @@
 import streams
-import strutils
-import strscans
 import strformat
 
 import edge

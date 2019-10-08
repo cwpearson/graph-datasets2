@@ -1,17 +1,16 @@
 import json
-import nre
 import strutils
 import os
 import strformat
-import uri
 
 import untar
 
 import logger
-import nethelper
 import init
 import gzhelper
 import pathhelper
+import nethelper
+import nre
 
 const
     graphChallengeStaticRaw = staticRead("../static/graphchallengestatic.txt")

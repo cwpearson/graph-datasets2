@@ -1,12 +1,10 @@
 import math
 import strformat
 import os
-import sequtils
 import algorithm
 import strutils
 
 import ../logger
-import ../init
 import ../format
 import ../edge_stream
 import ../edge

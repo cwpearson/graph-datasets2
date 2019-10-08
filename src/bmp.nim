@@ -1,5 +1,4 @@
 import streams
-import strformat
 
 type Image*[T] = ref object of RootObj
     data*: seq[T]
