@@ -13,25 +13,38 @@ import ../logger
 import ../edge_stream
 
 type Stats = tuple
-    numEdges: int
-    numVerts: int
-    minDeg: int
-    maxDeg: int
-    avgDeg: float
-    stddevDeg: float
-    deg0Verts: int
+    numNonZeros: int
+    numRows: int
+    minRowNonZeros: int
+    maxRowNonZeros: int
+    stdRowNonZeros: float
+    numEmptyRows: int
+    numCols: int
+    minColNonZeros: int
+    maxColNonZeros: int
+    stdColNonZeros: float
+    numEmptyCols: int
 
 proc initStats(): Stats =
     return Stats (
-        numEdges: 0,
-        numVerts: 0,
-        minDeg: int.high,
-        maxDeg: 0,
-        avgDeg: 0.0,
-        stddevDeg: Inf,
-        deg0Verts: 0,
+        numNonZeros: 0,
+        numRows: 0,
+        minRowNonZeros: int.high,
+        maxRowNonZeros: int.low,
+        stdRowNonZeros: 0.0,
+        numEmptyRows: 0,
+        numCols: 0,
+        minColNonZeros: int.high,
+        maxColNonZeros: int.low,
+        stdColNonZeros: 0.0,
+        numEmptyCols: 0,
     )
 
+proc avgRowNnz(s: Stats): float =
+    s.numNonZeros.float / s.numRows.float
+
+proc avgColNnz(s: Stats): float =
+    s.numNonZeros.float / s.numCols.float
 
 proc count (path: string, formatStr: string = "unknown"): int {.discardable.} =
     info("open ", path)
@@ -42,46 +55,55 @@ proc count (path: string, formatStr: string = "unknown"): int {.discardable.} =
         quit(1)
 
 
-
     var stats = initStats()
-    let
-        sz = getFileSize(path)
-        edge_est = sz div 24
-        vert_est = edge_est div 1 #
-    debug("estimate ", edge_est, " edges -> ", vert_est, " verts")
-    var deg = initTable[int, int](tables.rightSize(vert_est))
-    # var deg: Table[int, int]
+    var rowNZ = initTable[int, int]()
+    var colNz = initTable[int, int]()
 
     info("count vert degrees ", path)
     for i, edge in es:
-        stats.numEdges += 1
-        let d1 = deg.getOrDefault(edge.src)
-        deg[edge.src] = d1+1
-        let d2 = deg.getOrDefault(edge.dst)
-        deg[edge.dst] = d2
+        stats.numNonZeros += 1
+        let d1 = rowNZ.getOrDefault(edge.src)
+        rowNZ[edge.src] = d1+1
+        let d2 = colNZ.getOrDefault(edge.dst)
+        colNZ[edge.dst] = d2+1
         if i mod (1024 * 1024) == 0:
             info(&"edge {i}...")
 
-    stats.numVerts = len(deg)
-    debug(&"{stats.numVerts} verts")
+    stats.numRows = len(rowNZ)
+    stats.numCols = len(colNZ)
+    debug(&"{stats.numRows} rows")
+    debug(&"{stats.numCols} cols")
 
-    info("summarize degrees (1/2)")
-    var total = 0
-    for _, outdeg in deg:
-        total += outdeg
-        stats.minDeg = min(stats.minDeg, outdeg)
-        stats.maxDeg = max(stats.maxDeg, outdeg)
-        if outdeg == 0:
-            stats.deg0Verts += 1
-    stats.avgDeg = float(total) / float(len(deg))
+    info("summarize degrees (1/4)")
+    for _, rowNNZ in rowNZ:
+        stats.minRowNonZeros = min(stats.minRowNonZeros, rowNNZ)
+        stats.maxRowNonZeros = max(stats.maxRowNonZeros, rowNNZ)
+        if rowNNZ == 0:
+            stats.numEmptyRows += 1
 
-    info("summarize degrees (2/2)")
+    info("summarize degrees (2/4)")
+    for _, colNNZ in colNZ:
+        stats.minColNonZeros = min(stats.minColNonZeros, colNNZ)
+        stats.maxColNonZeros = max(stats.maxColNonZeros, colNNZ)
+        if colNNZ == 0:
+            stats.numEmptyCols += 1
+
+
+    info("summarize degrees (3/4)")
     var std_dev = 0.0
-    for _, outdeg in deg:
-        std_dev += pow(float(outdeg) - stats.avgDeg, 2)
-    std_dev /= float(len(deg) - 1)
+    for _, outdeg in rowNZ:
+        std_dev += pow(float(outdeg) - stats.avgRowNnz(), 2)
+    std_dev /= float(len(rowNZ) - 1)
     std_dev = math.sqrt(std_dev)
-    stats.stddevDeg = std_dev
+    stats.stdRowNonZeros = std_dev
+
+    info("summarize degrees (4/4)")
+    std_dev = 0.0
+    for _, outdeg in colNZ:
+        std_dev += pow(float(outdeg) - stats.avgColNnz(), 2)
+    std_dev /= float(len(colNZ) - 1)
+    std_dev = math.sqrt(std_dev)
+    stats.stdColNonZeros = std_dev
 
 
     echo stats
