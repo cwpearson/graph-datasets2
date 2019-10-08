@@ -56,7 +56,7 @@ proc visualize (input, output: string, imgHeightHint, imgWidthHint: int,
     info(&"image WxH is {imgWidth}x{imgHeight}")
 
 
-    var bins = newImage[int](imgWidth, imgHeight)
+    var bins = newImage[int](imgHeight, imgWidth)
 
 
     notice(&"pass 2: binning edges")
@@ -68,7 +68,7 @@ proc visualize (input, output: string, imgHeightHint, imgWidthHint: int,
     # echo bins.data
 
     info(&"convert to float")
-    var floatBins = newImage[float](imgWidth, imgHeight)
+    var floatBins = newImage[float](imgHeight, imgWidth)
     for x, y, p in items(bins):
         floatBins[x, y] = p.float
     # echo floatBins.data
