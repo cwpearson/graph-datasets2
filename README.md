@@ -107,6 +107,15 @@ sudo apt install libgtk-3-dev libwebkit2gtk-4.0-dev
 - [ ] Verification of datsets
 - [ ] partitioning datasets
 
+## Usage Examples
+
+with GNU parallel
+```
+parallel graph_datasets visualize {} {.}.bmp ::: *.mm
+```
+
+
+
 ## Making a Release
 
 1. Increment the package version in `graph_datasets2.nimble`.
