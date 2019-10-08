@@ -1,5 +1,4 @@
 import plotly
-import math
 import sequtils
 import strutils
 import strformat
