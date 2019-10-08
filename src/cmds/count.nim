@@ -94,6 +94,7 @@ proc doCount *[T](opts: T): int {.discardable.} =
 when isMainModule:
     import times
     import hashes
+    import sets
     import random
     # import nimprof
 
