@@ -14,7 +14,6 @@ import ../format
 import ../logger
 import ../dict
 import ../edge_stream
-import ../graph_challenge
 
 type Method* = enum
     mCompact
