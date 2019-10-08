@@ -1,6 +1,5 @@
 import streams
 import strutils
-import os
 import math
 import strformat
 
@@ -11,38 +10,59 @@ import ../edge_stream
 import ../bmp
 
 
-proc visualize (input, output: string, size: int, noLog: bool) =
+proc visualize (input, output: string, imgHeightHint, imgWidthHint: int,
+        matHeightHint, matWidthHint: int, noLog: bool) =
     info("open " & $input)
     var es = guessEdgeStreamReader(input)
     if es == nil:
         error(&"can't count {input}")
         quit(1)
 
-    let
-        width = size
-        height = size
-
-    var bins = newImage[int](width, height)
-
-    notice(&"pass 1: counting nodes")
-    var maxNode = -1
+    notice(&"pass 1: matrix dimensions")
+    var
+        maxCol = -1
+        maxRow = -1
     for edge in edges(es):
-        maxNode = max(maxNode, edge.src)
-        maxNode = max(maxNode, edge.dst)
-    info(&"max node was {maxNode}")
-    maxNode += 1
+        maxRow = max(maxRow, edge.src)
+        maxCol = max(maxCol, edge.dst)
+    info(&"max row/cols were {maxRow}/{maxCol}")
+    let matWidth = if matWidthHint != 0:
+        matWidthHint
+    else:
+        maxCol + 1
+    let matHeight = if matHeightHint != 0:
+        matHeightHint
+    else:
+        maxRow + 1
+
+
+    var imgWidth, imgHeight: int
+    if imgHeightHint != 0:
+        imgHeight = imgHeightHint
+        imgWidth = int(imgHeightHint.float * matWidth.float / matHeight.float)
+    elif imgWidthHint != 0:
+        imgWidth = imgWidthHint
+        imgHeight = int(imgWidthHint.float * matWidth.float / matHeight.float)
+    else:
+        imgWidth = int(1000.0 * matWidth.float / max(matWidth, matHeight).float)
+        imgHeight = int(1000.0 * matHeight.float / max(matWidth,
+                matHeight).float)
+    info(&"image dimensions are {imgWidth}x{imgHeight}")
+
+
+    var bins = newImage[int](imgWidth, imgHeight)
+
 
     notice(&"pass 2: binning edges")
     for edge in edges(es):
         let
-            sidx = int(float(edge.src) / float(maxNode) * width.float)
-            didx = int(float(edge.dst) / float(maxNode) * height.float)
+            sidx = int(float(edge.src) / float(matHeight) * imgHeight.float)
+            didx = int(float(edge.dst) / float(matWidth) * imgWidth.float)
         bins.mget(didx, sidx) += 1
     # echo bins.data
 
-    # conver to float
     info(&"convert to float")
-    var floatBins = newImage[float](width, height)
+    var floatBins = newImage[float](imgWidth, imgHeight)
     for x, y, p in items(bins):
         floatBins[x, y] = p.float
     # echo floatBins.data
@@ -91,5 +111,10 @@ proc visualize (input, output: string, size: int, noLog: bool) =
 proc doVisualize *[T](opts: T) =
     let
         size = parseInt(opts.size)
-    visualize(opts.input, opts.output, size, opts.no_log)
+        imgHeightHint = parseInt(opts.img_height)
+        imgWidthHint = parseInt(opts.img_width)
+        matHeightHint = parseInt(opts.mat_height)
+        matWidthHint = parseInt(opts.mat_height)
+    visualize(opts.input, opts.output, imgHeightHint, imgWidthHint,
+            matHeightHint, matWidthHint, opts.no_log)
 
