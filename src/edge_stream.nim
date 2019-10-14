@@ -1,6 +1,7 @@
 import streams
 
 import edge
+import ../logging
 
 type
     EdgeStream* = ref object of RootObj
@@ -43,6 +44,7 @@ iterator pairs*(s: EdgeStream): (int, Edge) =
         cnt += 1
 
 method getMatrixSize*(s: EdgeStream): (int, int) {.base.} =
+    debug("reading edges to get matrix size")
     let pos = s.getPosition()
     var
         maxRow = -1

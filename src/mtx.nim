@@ -222,9 +222,9 @@ proc openMtxReader *(path: string): MtxStream =
     result = newMtxReader(stream)
 
 
-method getMatrixSize*(s: EdgeStream): (int, int) =
-    let ms = (MtxStream)s
-    return (ms.rows, ms.cols)
+method getMatrixSize*(s: MtxStream): (int, int) =
+    debug("getMatrixSize() for mtx, using header")
+    return (s.rows, s.cols)
 
 when isMainModule:
     import init
