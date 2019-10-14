@@ -46,18 +46,39 @@ proc avgRowNnz(s: Stats): float =
 proc avgColNnz(s: Stats): float =
     s.numNonZeros.float / s.numCols.float
 
-proc count (path: string, formatStr: string = "unknown"): int {.discardable.} =
+
+proc headerStr(delim = ","): string =
+    ["path", "nnz", "num_rows", "num_cols",
+    "min_row_nz", "max_row_nz", "std_row_nz", "empty_rows",
+    "min_col_nz", "max_col_nz", "std_col_nz", "empty_cols",
+    ].join(delim)
+
+proc rowStr(path: string, s: Stats, delim = ","): string =
+    [path, $s.numNonZeros, $s.numRows, $s.numCols,
+     $s.minRowNonZeros, $s.maxRowNonZeros, $s.stdRowNonZeros, $s.numEmptyRows,
+     $s.minColNonZeros, $s.maxColNonZeros, $s.stdColNonZeros, $s.numEmptyCols,
+    ].join(delim)
+
+proc countOne (path: string, formatStr: string = "unknown"): int =
+    result = 0
     info("open ", path)
     let format: DatasetKind = fromStr(formatStr)
     var es = guessEdgeStreamReader(path, format)
     if es == nil:
         error(&"can't count {path}")
-        quit(1)
+        return 1
 
 
     var stats = initStats()
     var rowNZ = initTable[int, int]()
     var colNz = initTable[int, int]()
+
+    info("matrix size ", path)
+    let (numRows, numCols) = es.getMatrixSize()
+    stats.numRows = numRows
+    stats.numCols = numCols
+    debug(&"{stats.numRows} rows")
+    debug(&"{stats.numCols} cols")
 
     info("count vert degrees ", path)
     for i, edge in es:
@@ -68,11 +89,7 @@ proc count (path: string, formatStr: string = "unknown"): int {.discardable.} =
         colNZ[edge.dst] = d2+1
         if i mod (1024 * 1024) == 0:
             info(&"edge {i}...")
-
-    stats.numRows = len(rowNZ)
-    stats.numCols = len(colNZ)
-    debug(&"{stats.numRows} rows")
-    debug(&"{stats.numCols} cols")
+    es.close()
 
     info("summarize degrees (1/4)")
     for _, rowNNZ in rowNZ:
@@ -87,7 +104,6 @@ proc count (path: string, formatStr: string = "unknown"): int {.discardable.} =
         stats.maxColNonZeros = max(stats.maxColNonZeros, colNNZ)
         if colNNZ == 0:
             stats.numEmptyCols += 1
-
 
     info("summarize degrees (3/4)")
     var std_dev = 0.0
@@ -105,13 +121,28 @@ proc count (path: string, formatStr: string = "unknown"): int {.discardable.} =
     std_dev = math.sqrt(std_dev)
     stats.stdColNonZeros = std_dev
 
+    echo rowStr(path, stats)
 
-    echo stats
-    es.close()
+proc countAll (paths: seq[string], formatStr: string = "unknown"): int =
+    echo headerStr()
+    result = 0
+    for path in paths:
+        if countOne(path, formatStr) != 0:
+            result = 1
 
 
-proc doCount *[T](opts: T): int {.discardable.} =
-    count(opts.input, formatStr = opts.format)
+
+proc countCli*(format = "unknown", debug = false,
+        verbose = false, inputs: seq[string]): int =
+    setLevel(lvlNotice)
+    if debug:
+        setLevel(lvlDebug)
+    if verbose:
+        setLevel(lvlAll)
+    # if version:
+        # version()
+        # return 0
+    countAll(inputs, format)
 
 when isMainModule:
     import times

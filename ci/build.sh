@@ -11,4 +11,5 @@ else
     nimble build -d:release -d:webview
     ./graph_datasets version
     ./graph_datasets download --list
+    ./gd_count --help
 fi

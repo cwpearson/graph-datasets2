@@ -22,6 +22,14 @@ The row and column values in the matrix are added into pixel bins, which are the
 * `graph_datasets visualize a.bel out.bmp`: Read the edge list in `a.bel` and generate a bitmap in `out.bmp`
 * `graph_datasets visualize a.bel out.bmp --size 200 --no-log`: Don't apply log scaling, and make the output image 200x200.
 
+## `gd_count`
+
+Get statistics for one or more datasets
+
+* `gd_count blah.mtx foo.tsv`: report stats for two files
+* `gd_count blah foo --format mm`: treat input files as Matrix-market files.
+* `gd_count --help` for more info
+
 
 ## `graph_datasets download`
 

@@ -221,6 +221,11 @@ proc openMtxReader *(path: string): MtxStream =
     var stream = openFileStream(path, fmRead)
     result = newMtxReader(stream)
 
+
+method getMatrixSize*(s: MtxStream): (int, int) =
+    debug("getMatrixSize() for mtx, using header")
+    return (s.rows, s.cols)
+
 when isMainModule:
     import init
     init()
