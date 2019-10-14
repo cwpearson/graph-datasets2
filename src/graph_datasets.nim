@@ -88,8 +88,8 @@ var p = newParser("graph_datasets"):
     arg("input")
     arg("output")
     flag("-f", "--force", help = "overwrite output file")
-    option("-k", "--kind", default = "random", choices = @["random", "compact"],
-        help = "relabel method")
+    option("-k", "--kind", default = "random", choices = @["random", "compact",
+        "zeroindex"], help = "relabel method")
     option("--seed", default = "0")
     run:
       doRelabel(opts)

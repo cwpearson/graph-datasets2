@@ -18,6 +18,7 @@ import ../edge_stream
 type Method* = enum
     mCompact
     mRandom
+    mZeroIndex
 
 proc relabel(input_path, output_path: string, m: Method, seed = 0,
         force = false) =
@@ -125,6 +126,27 @@ proc relabel(input_path, output_path: string, m: Method, seed = 0,
             let dst = newIds[edge.dst]
             os.writeEdge(initEdge(src, dst, edge.weight))
 
+    of mZeroIndex:
+        notice("pass 1: matrix size")
+        let (numRows, numCols) = ins.getMatrixSize()
+
+        notice("pass 2: find min node")
+        var
+            minNode = high(int)
+            nnz = 0
+
+        for edge in edges(ins):
+            minNode = min(edge.src, minNode)
+            minNode = min(edge.dst, minNode)
+            nnz += 1
+
+        notice(&"subtracting {minNode} from all indices")
+        var os = guessEdgeStreamWriter(output_path, numRows, numCols, nnz)
+        for edge in edges(ins):
+            os.writeEdge(initEdge(edge.src - minNode, edge.dst - minNode))
+        ins.close()
+        os.close()
+
 
 
 
@@ -132,6 +154,7 @@ proc doRelabel *[T](opts: T): int {.discardable.} =
     let m = case opts.kind:
     of "compact": mCompact
     of "random": mRandom
+    of "zeroindex": mZeroIndex
     else:
         error(&"unexpected kind {opts.kind}")
         quit(1)
