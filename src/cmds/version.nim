@@ -1,14 +1,18 @@
 import os
 import strutils
+import strformat
 
 import ../logger
 import ../version
 
-proc version() =
-    echo "version: ", GdVerStr
-    echo "sha:     ", GdGitSha
-    echo "author:  ", GdAuthor
-    echo "url:     ", GdUrl
+proc versionStr*(): string =
+    &"version: {GdVerStr}" &
+    &"\nsha:     {GdGitSha}" &
+    &"\nauthor:  {GdAuthor}" &
+    &"\nurl:     {GdUrl}"
+
+proc version*() =
+    echo versionStr()
 
 
 proc doVersion *[T](opts: T): int {.discardable.} =

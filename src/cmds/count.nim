@@ -73,6 +73,13 @@ proc countOne (path: string, formatStr: string = "unknown"): int =
     var rowNZ = initTable[int, int]()
     var colNz = initTable[int, int]()
 
+    info("matrix size ", path)
+    let (numRows, numCols) = es.getMatrixSize()
+    stats.numRows = numRows
+    stats.numCols = numCols
+    debug(&"{stats.numRows} rows")
+    debug(&"{stats.numCols} cols")
+
     info("count vert degrees ", path)
     for i, edge in es:
         stats.numNonZeros += 1
@@ -83,11 +90,6 @@ proc countOne (path: string, formatStr: string = "unknown"): int =
         if i mod (1024 * 1024) == 0:
             info(&"edge {i}...")
     es.close()
-
-    stats.numRows = len(rowNZ)
-    stats.numCols = len(colNZ)
-    debug(&"{stats.numRows} rows")
-    debug(&"{stats.numCols} cols")
 
     info("summarize degrees (1/4)")
     for _, rowNNZ in rowNZ:
@@ -130,12 +132,16 @@ proc countAll (paths: seq[string], formatStr: string = "unknown"): int =
 
 
 
-proc countCli*(format = "unknown", debug = false, verbose = false, inputs: seq[string]): int =
+proc countCli*(format = "unknown", debug = false,
+        verbose = false, inputs: seq[string]): int =
     setLevel(lvlNotice)
     if debug:
         setLevel(lvlDebug)
     if verbose:
         setLevel(lvlAll)
+    # if version:
+        # version()
+        # return 0
     countAll(inputs, format)
 
 when isMainModule:

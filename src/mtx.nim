@@ -221,6 +221,11 @@ proc openMtxReader *(path: string): MtxStream =
     var stream = openFileStream(path, fmRead)
     result = newMtxReader(stream)
 
+
+method getMatrixSize*(s: EdgeStream): (int, int) =
+    let ms = (MtxStream)s
+    return (ms.rows, ms.cols)
+
 when isMainModule:
     import init
     init()
