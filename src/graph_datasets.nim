@@ -7,7 +7,6 @@ import logger
 import init
 import cmds/cacherows
 import cmds/convert
-import cmds/count
 import cmds/download
 import cmds/generate
 import cmds/histogram
@@ -44,11 +43,6 @@ var p = newParser("graph_datasets"):
     arg("output")
     run:
       doConvert(opts)
-  command("count"):
-    arg("input")
-    option("--format", choices = @["bel", "tsv", "bmtx", "mtx"])
-    run:
-      doCount(opts)
   command("download"):
     arg("dataset", default = ".*", help = "regex for datasets to download")
     flag("--dry-run")
