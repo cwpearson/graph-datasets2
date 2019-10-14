@@ -11,10 +11,6 @@ proc versionStr*(): string =
     &"\nauthor:  {GdAuthor}" &
     &"\nurl:     {GdUrl}"
 
-proc version*() =
-    echo versionStr()
-
-
 proc doVersion *[T](opts: T): int {.discardable.} =
-    version()
+    echo versionStr()
 
