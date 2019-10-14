@@ -92,14 +92,16 @@ proc countOne (path: string, formatStr: string = "unknown"): int =
     es.close()
 
     info("summarize degrees (1/4)")
-    for _, rowNNZ in rowNZ:
+    for row in 0..<numRows:
+        let rowNNZ = rowNZ.getOrDefault(row, 0)
         stats.minRowNonZeros = min(stats.minRowNonZeros, rowNNZ)
         stats.maxRowNonZeros = max(stats.maxRowNonZeros, rowNNZ)
         if rowNNZ == 0:
             stats.numEmptyRows += 1
 
     info("summarize degrees (2/4)")
-    for _, colNNZ in colNZ:
+    for col in 0..<numCols:
+        let colNNZ = colNZ.getOrDefault(col, 0)
         stats.minColNonZeros = min(stats.minColNonZeros, colNNZ)
         stats.maxColNonZeros = max(stats.maxColNonZeros, colNNZ)
         if colNNZ == 0:
@@ -107,17 +109,19 @@ proc countOne (path: string, formatStr: string = "unknown"): int =
 
     info("summarize degrees (3/4)")
     var std_dev = 0.0
-    for _, outdeg in rowNZ:
+    for row in 0..<stats.numRows:
+        let outdeg = rowNZ.getOrDefault(row, 0)
         std_dev += pow(float(outdeg) - stats.avgRowNnz(), 2)
-    std_dev /= float(len(rowNZ) - 1)
+    std_dev /= float(stats.numRows - 1)
     std_dev = math.sqrt(std_dev)
     stats.stdRowNonZeros = std_dev
 
     info("summarize degrees (4/4)")
     std_dev = 0.0
-    for _, outdeg in colNZ:
+    for col in 0..<stats.numCols:
+        let outdeg = colNZ.getOrDefault(col, 0)
         std_dev += pow(float(outdeg) - stats.avgColNnz(), 2)
-    std_dev /= float(len(colNZ) - 1)
+    std_dev /= float(stats.numCols - 1)
     std_dev = math.sqrt(std_dev)
     stats.stdColNonZeros = std_dev
 
