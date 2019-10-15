@@ -48,15 +48,25 @@ proc avgColNnz(s: Stats): float =
 
 
 proc headerStr(delim = ","): string =
-    ["path", "nnz", "num_rows", "num_cols",
-    "min_row_nz", "max_row_nz", "std_row_nz", "empty_rows",
-    "min_col_nz", "max_col_nz", "std_col_nz", "empty_cols",
+    ["path", "num_rows", "num_cols", "nnz",
+    "fill",
+    "min_row_nz", "max_row_nz",
+    "avg_row_nz",
+    "std_row_nz", "empty_rows",
+    "min_col_nz", "max_col_nz",
+    "avg_col_nz",
+    "std_col_nz", "empty_cols",
     ].join(delim)
 
 proc rowStr(path: string, s: Stats, delim = ","): string =
-    [path, $s.numNonZeros, $s.numRows, $s.numCols,
-     $s.minRowNonZeros, $s.maxRowNonZeros, $s.stdRowNonZeros, $s.numEmptyRows,
-     $s.minColNonZeros, $s.maxColNonZeros, $s.stdColNonZeros, $s.numEmptyCols,
+    [path, $s.numRows, $s.numCols, $s.numNonZeros,
+     $(s.numNonZeros.float / float(s.numRows * s.numCols)),
+     $s.minRowNonZeros, $s.maxRowNonZeros,
+     $(s.numNonZeros.float / s.numRows.float),
+     $s.stdRowNonZeros, $s.numEmptyRows,
+     $s.minColNonZeros, $s.maxColNonZeros,
+     $(s.numNonZeros.float / s.numCols.float),
+     $s.stdColNonZeros, $s.numEmptyCols,
     ].join(delim)
 
 proc countOne (path: string, formatStr: string = "unknown"): int =
