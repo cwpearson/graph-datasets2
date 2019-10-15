@@ -1,6 +1,6 @@
 # Package
 
-version       = "0.8.1"
+version       = "0.8.4"
 author        = "Carl Pearson"
 description   = "A dataset manager"
 license       = "MIT"
