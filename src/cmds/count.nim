@@ -131,6 +131,7 @@ proc countAll (paths: seq[string], formatStr: string = "unknown"): int =
     echo headerStr()
     result = 0
     for path in paths:
+        notice(path)
         if countOne(path, formatStr) != 0:
             result = 1
 
@@ -143,9 +144,6 @@ proc countCli*(format = "unknown", debug = false,
         setLevel(lvlDebug)
     if verbose:
         setLevel(lvlAll)
-    # if version:
-        # version()
-        # return 0
     countAll(inputs, format)
 
 when isMainModule:
