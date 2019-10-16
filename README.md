@@ -54,8 +54,19 @@ Download and extract datasets.
 | delimited | file | hint | [delimited](https://github.com/cwpearson/graph-datasets2#delimited)
 
 * `graph_datasets convert a.tsv b.bmtx`: convert `a` from GraphChallenge tsv to binary matrix-market format.
+* `graph_datasets convert --mat-rows=1000 a.tsv b.mtx`: convert `a` from GraphChallenge tsv to matrix-market format, and override detected number of matrix rows with `1000`.
 
+Options (0.8.5)
 
+* `-f, --force`                overwrite output file
+* `--input-kind=INPUT_KIND`    format of input Possible values: [unknown, bmtx, mtx, tsv, bel, delimited] (default: unknown)
+* `--delimiter=DELIMITER`      delimiter for rows
+* `--src-pos=SRC_POS`          column index for src (default: -1)
+* `--dst-pos=DST_POS`          column index for dst (default: -1)
+* `--weight-pos=WEIGHT_POS`    column index for weight (default: -1)
+* `--mat-rows=MAT_ROWS`        output rows for matrix (default: -1)
+* `--mat-cols=MAT_COLS`        output cols for matrix (default: -1)
+* `-h, --help`                 Show this help
 
 ## Building
 
