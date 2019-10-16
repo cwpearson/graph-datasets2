@@ -19,14 +19,15 @@ import ../graph_challenge
 
 type
     ConvertError* = object of Exception
-    SrcKindUnknownError = object of ConvertError
+    FormatUnknownError = object of ConvertError
 
 
 proc convert*(src: string, dst: string, force: bool, srcKindHint = dkUnknown,
-        srcPos = 0, dstPos = 0, weightPos = 0): int {.discardable.} =
+        srcPos = -1, dstPos = -1, weightPos = -1, matColsHint = -1,
+                matRowsHint = -1): int {.discardable.} =
 
     if not force and fileExists(dst) or dirExists(dst):
-        error(&"{dst} alread exists")
+        error(&"output file {dst} already exists")
         quit(1)
 
     var srcKind = srcKindHint
@@ -36,11 +37,9 @@ proc convert*(src: string, dst: string, force: bool, srcKindHint = dkUnknown,
         dstKind = guessFormat(dst)
 
     if srcKind == dkUnknown:
-        raise newException(SrcKindUnknownError, &"{src}")
-
+        raise newException(FormatUnknownError, &"{src}")
     if dstKind == dkUnknown:
-        echo "unable to determine format for dst ", src
-        quit(1)
+        raise newException(FormatUnknownError, &"{dst}")
 
     info(&"converting {src} ({srcKind}) to {dst} ({dstKind})")
 
@@ -93,33 +92,35 @@ proc convert*(src: string, dst: string, force: bool, srcKindHint = dkUnknown,
 
         var srces: EdgeStream
         if srcKind == dkDelimited:
-            info(&"reading edge src,dst,weight from cols {srcPos},{dstPos},{weightPos}")
+            info(&"treating columns {srcPos},{dstPos},{weightPos} as src,dst,weight")
             srces = openDelimitedStream(src, '\t', srcPos, dstPos, weightPos)
         else:
             srces = guessEdgeStreamReader(src, srcKind)
 
         # for some kinds of outputs, we need to know some info
         var
-            maxrows = 0
-            maxcols = 0
+            matRows = 0
+            matCols = 0
             entries = 0
         case dstKind
         of dkBmtx, dkMtx:
             info(&"read {src} for matrix dimensions")
-            for edge in srces.edges():
-                maxrows = max(maxrows, edge.src)
-                maxcols = max(maxcols, edge.dst)
-                entries += 1
-            info(&"got {maxrows+1} rows, {maxcols+1} cols, and {entries} nnz")
+            (matRows, matCols, entries) = srces.getMatrixSize()
+            if matRowsHint >= 0:
+                warn(&"override detected {matRows} rows with {matRowsHint}")
+                matRows = matRowsHint
+            if matColsHint >= 0:
+                warn(&"override detected {matCols} cols with {matColsHint}")
+                matCols = matColsHint
+
+            info(&"got {matRows} rows, {matCols} cols, and {entries} nnz")
         else:
             discard
 
-        var dstes = guessEdgeStreamWriter(dst, maxrows+1, maxcols+1, entries)
+        var dstes = guessEdgeStreamWriter(dst, matRows, matCols, entries)
         notice(&"{src} -> {dst}")
         for edge in srces.edges():
             dstes.writeEdge(edge)
-
-
 
     else:
         error("don't know how to convert ", srcKind, " to ", dstKind)
@@ -138,7 +139,9 @@ proc doConvert *[T](opts: T) =
     let srcPos = parseInt opts.src_pos
     let dstPos = parseInt opts.dst_pos
     let weightPos = parseInt opts.weight_pos
+    let matRows = parseInt opts.mat_rows
+    let matCols = parseInt opts.mat_cols
 
     convert(src = opts.input, dst = opts.output, force = opts.force,
             srcKindHint = inputKind, srcPos = srcPos, dstPos = dstPos,
-                    weightPos = weightPos)
+            weightPos = weightPos, matColsHint = matCols, matRowsHint = matRows)

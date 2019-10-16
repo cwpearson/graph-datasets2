@@ -128,17 +128,15 @@ proc relabel(input_path, output_path: string, m: Method, seed = 0,
 
     of mZeroIndex:
         notice("pass 1: matrix size")
-        let (numRows, numCols) = ins.getMatrixSize()
+        let (numRows, numCols, nnz) = ins.getMatrixSize()
 
         notice("pass 2: find min node")
         var
             minNode = high(int)
-            nnz = 0
 
         for edge in edges(ins):
             minNode = min(edge.src, minNode)
             minNode = min(edge.dst, minNode)
-            nnz += 1
 
         notice(&"subtracting {minNode} from all indices")
         var os = guessEdgeStreamWriter(output_path, numRows, numCols, nnz)

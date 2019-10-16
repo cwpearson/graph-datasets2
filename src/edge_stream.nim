@@ -43,14 +43,17 @@ iterator pairs*(s: EdgeStream): (int, Edge) =
         yield (cnt, edge)
         cnt += 1
 
-method getMatrixSize*(s: EdgeStream): (int, int) {.base.} =
+method getMatrixSize*(s: EdgeStream): (int, int, int) {.base.} =
+    # return rows, cols, nnz
     debug("reading edges to get matrix size")
     let pos = s.getPosition()
     var
         maxRow = -1
         maxCol = -1
+        nnz = 0
     for edge in items(s):
         maxRow = max(maxRow, edge.src)
         maxCol = max(maxCol, edge.dst)
+        nnz += 1
     s.setPosition(pos)
-    return (maxRow+1, maxCol+1)
+    return (maxRow+1, maxCol+1, nnz)

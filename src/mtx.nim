@@ -222,9 +222,9 @@ proc openMtxReader *(path: string): MtxStream =
     result = newMtxReader(stream)
 
 
-method getMatrixSize*(s: MtxStream): (int, int) =
+method getMatrixSize*(s: MtxStream): (int, int, int) =
     debug("getMatrixSize() for mtx, using header")
-    return (s.rows, s.cols)
+    return (s.rows, s.cols, s.entries)
 
 when isMainModule:
     import init

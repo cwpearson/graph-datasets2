@@ -36,9 +36,11 @@ var p = newParser("graph_datasets"):
     option("--input-kind", help = "format of input", default = $dkUnknown,
         choices = @[$dkUnknown, $dkBmtx, $dkMtx, $dkTsv, $dkBel, $dkDelimited])
     option("--delimiter", help = "delimiter for rows")
-    option("--src-pos", help = "column index for src", default = "0")
-    option("--dst-pos", help = "column index for dst", default = "0")
-    option("--weight-pos", help = "column index for weight", default = "0")
+    option("--src-pos", help = "column index for src", default = "-1")
+    option("--dst-pos", help = "column index for dst", default = "-1")
+    option("--weight-pos", help = "column index for weight", default = "-1")
+    option("--mat-rows", help = "output rows for matrix", default = "-1")
+    option("--mat-cols", help = "output cols for matrix", default = "-1")
     arg("input")
     arg("output")
     run:

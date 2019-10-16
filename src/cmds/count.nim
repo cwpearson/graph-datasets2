@@ -84,15 +84,16 @@ proc countOne (path: string, formatStr: string = "unknown"): int =
     var colNz = initTable[int, int]()
 
     info("matrix size ", path)
-    let (numRows, numCols) = es.getMatrixSize()
+    let (numRows, numCols, numNonZeros) = es.getMatrixSize()
     stats.numRows = numRows
     stats.numCols = numCols
+    stats.numNonZeros = numNonZeros
     debug(&"{stats.numRows} rows")
     debug(&"{stats.numCols} cols")
+    debug(&"{stats.numNonZeros} nnz")
 
     info("count vert degrees ", path)
     for i, edge in es:
-        stats.numNonZeros += 1
         let d1 = rowNZ.getOrDefault(edge.src)
         rowNZ[edge.src] = d1+1
         let d2 = colNZ.getOrDefault(edge.dst)
